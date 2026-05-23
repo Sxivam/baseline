@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Baseline
 
-## Getting Started
+> Tracking, not diagnosis.
 
-First, run the development server:
+Baseline turns a one-time blood test into an ongoing, nudged habit. Upload a blood report → Claude parses your markers → see your baseline → for Vitamin D and B12, a decay forecast projects when each crosses its threshold → an email nudge fires ~3 weeks before. The test is the cold start; the loop is the product.
+
+Built for the Sprinto Growth Associate take-home, May 2026.
+
+## The loop
+
+| Route | What it does |
+|---|---|
+| `/start` | Onboarding — name, age, sex, diet, sun, city (+ an optional PCOS lifestyle pathway for female users) |
+| `/upload` | PDF dropzone → `/api/parse` (Claude). Manual entry is always one click away |
+| `/dashboard` | Per-marker status (in / watch / low). Hero card + forecast preview + queued nudge |
+| `/forecast/[marker]` | Decay forecast for D & B12 — observed curve, projected crossing, factor explainer |
+| `/nudges/[id]/preview` | The rendered email from `/api/generate-nudge` — the loop closing |
+
+## Non-negotiable: §7
+
+Baseline is an **awareness and tracking tool, not a medical service**. All generated copy is gated by:
+
+1. A non-negotiables block in the Claude system prompts (no dosing, no diagnosis, no urgency words).
+2. A server-side regex check on every response.
+3. A §7-safe static fallback (in `lib/copy.ts`, `lib/nudge.ts`) used if the Claude output ever misses.
+4. A persistent disclaimer on every screen.
+
+The PCOS pathway (female users) is **lifestyle tracking + awareness only** — never a screen or diagnosis.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + TypeScript
+- **Tailwind v4** + Nunito (`next/font/google`)
+- **Zustand** with localStorage persistence
+- **OpenRouter** — OpenAI-compatible Claude models, called server-side, for PDF parsing and personalised nudge copy
+
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env.local
+# add your OPENROUTER_API_KEY to .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs at `http://localhost:3000` (or whatever port the launch config sets). Without a key it runs on deterministic fallbacks, so the loop is still demoable end-to-end — drop a key in to switch on live PDF parsing + Claude-written nudge copy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project layout
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  start/            onboarding
+  upload/           PDF parse + manual fallback
+  dashboard/        baseline + forecast preview + nudge card
+  forecast/[marker] decay chart for D / B12
+  nudges/[id]/preview rendered email
+  api/parse         OpenRouter PDF parsing
+  api/generate-nudge OpenRouter copy generation
+components/
+  ui.tsx            design system primitives
+  ForecastChart.tsx data-driven decay chart
+  PcosLens.tsx      §7-safe PCOS lifestyle lens
+lib/
+  markers.ts        marker reference (thresholds, decay rates, lab aliases)
+  forecast.ts       decay heuristic — projectMarker / findCrossing / nudgeDate
+  status.ts         in / watch / low computation
+  prompts.ts        Claude system prompts + safety gate
+  openrouter.ts     fetch-based client (PDF + prompt caching)
+  store.ts          Zustand store (persisted to localStorage)
+  copy.ts           static §7-pre-approved copy
+  nudge.ts          nudge input builder + static fallback payload
+  demo.ts           deterministic demo seed (Shivam's PharmEasy report)
+  tokens.ts         design tokens
+```
 
-## Learn More
+## Env vars
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Name | Required | Default |
+|---|---|---|
+| `OPENROUTER_API_KEY` | for live Claude calls | — (fallbacks otherwise) |
+| `OPENROUTER_MODEL` | no | `anthropic/claude-sonnet-4.5` |
+| `OPENROUTER_MODEL_PARSE` | no | falls back to `OPENROUTER_MODEL` |
+| `OPENROUTER_MODEL_COPY` | no | falls back to `OPENROUTER_MODEL` |
+| `OPENROUTER_BASE_URL` | no | `https://openrouter.ai/api/v1` |

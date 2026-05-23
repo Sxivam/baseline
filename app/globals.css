@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ink: #171e19;
+  --color-ink-2: #3a443e;
+  --color-mute: #8a948f;
+  --color-paper: #eeebe3;
+  --color-paper-warm: #e5e1d6;
+  --color-red: #ca0013;
+  --color-sage: #b7c6c2;
+  --color-sage-soft: rgba(183, 198, 194, 0.2);
+  --color-sage-mid: rgba(183, 198, 194, 0.4);
+  --color-amber: #a76c00;
+  --font-sans: var(--font-nunito), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* utility classes — parallel the hi-fi canvas */
+.hi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-mute);
+}
+.hi-num {
+  font-variant-numeric: tabular-nums;
+}
+.hi-card {
+  background: #fff;
+  border-radius: 40px;
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-sage-soft);
+}
+.hi-card-nested {
+  background: #fff;
+  border-radius: 24px;
+  border: 1px solid var(--color-sage-soft);
+}
+.hi-bento {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-sage-soft);
+}
+
+/* hide scrollbars on horizontal scrollers */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes bl-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes bl-progress {
+  0% {
+    left: -40%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+@keyframes bl-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
