@@ -1,0 +1,45 @@
+name: Refresh panel prices
+
+# Runs nightly at 03:00 UTC (~08:30 IST). Also available as a manual trigger
+# (Actions tab → Run workflow). Failure mode: if no panels can be re-verified
+# the scrape script exits non-zero so this job goes red — flagging that all
+# the lab-site selectors broke at once (usually means a redesign).
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install scraper deps (kept out of main package.json)
+        run: |
+          npm install --no-save playwright tsx
+          npx playwright install --with-deps chromium
+
+      - name: Scrape lab pages
+        run: npx tsx scripts/scrape-panels.ts
+
+      - name: Commit refreshed prices (if anything changed)
+        run: |
+          if [ -n "$(git status --porcelain data/panels.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/panels.json
+            git commit -m "chore(panels): nightly price refresh"
+            git push
+          else
+            echo "No price changes."
+          fi

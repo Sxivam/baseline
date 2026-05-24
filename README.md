@@ -15,6 +15,7 @@ Built for the Sprinto Growth Associate take-home, May 2026.
 | `/dashboard` | Per-marker status (in / watch / low). Hero card + forecast preview + queued nudge |
 | `/forecast/[marker]` | Decay forecast for D & B12 — observed curve, projected crossing, factor explainer |
 | `/nudges/[id]/preview` | The rendered email from `/api/generate-nudge` — the loop closing |
+| `/tests` | Aggregated home-based blood-test marketplace (PharmEasy, Tata 1mg, Thyrocare, Redcliffe) — sorted by what you actually need to re-test |
 
 ## Non-negotiable: §7
 
@@ -82,3 +83,18 @@ lib/
 | `OPENROUTER_MODEL_PARSE` | no | falls back to `OPENROUTER_MODEL` |
 | `OPENROUTER_MODEL_COPY` | no | falls back to `OPENROUTER_MODEL` |
 | `OPENROUTER_BASE_URL` | no | `https://openrouter.ai/api/v1` |
+
+## Nightly price refresh
+
+The marketplace at `/tests` reads from `data/panels.json`. A Playwright scraper (`scripts/scrape-panels.ts`) hits each panel's public page nightly via a GitHub Action (`.github/workflows/scrape-panels.yml`) at 03:00 UTC (~08:30 IST) and commits the refreshed prices back. Selectors are best-guess per lab; a broken selector for one panel degrades gracefully (skip + keep prior price + previous `lastVerified` date). If *every* panel fails the CI run goes red — visible signal that the lab sites all redesigned at once.
+
+Run locally:
+
+```bash
+npm install --no-save playwright tsx
+npx playwright install chromium
+npx tsx scripts/scrape-panels.ts
+```
+
+Selector strategies live in `STRATEGIES` inside the script — extend or fix per-lab there.
+

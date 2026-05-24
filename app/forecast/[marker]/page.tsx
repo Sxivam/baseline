@@ -386,6 +386,51 @@ export default function ForecastPage() {
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => router.push(`/tests?markers=${markerId}`)}
+              className="hi-card"
+              style={{
+                padding: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+                border: `1px solid ${tok.sageSoft}`,
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  background: tok.sageMid,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: "0 0 auto",
+                }}
+              >
+                <Icon name="file" size={16} stroke={tok.ink} strokeWidth={2} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span className="hi-label">When you re-test</span>
+                <div
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: tok.ink,
+                    marginTop: 2,
+                  }}
+                >
+                  Find a panel covering {def.name} →
+                </div>
+              </div>
+            </button>
           </div>
         </div>
 
