@@ -125,6 +125,44 @@ export const COPY_FEWSHOT =
     2,
   );
 
+// ── 3. Recommend-explain (marketplace panel rationales) ───────────────────
+export const RECOMMEND_EXPLAIN_SYSTEM = `You write panel-selection rationales for Baseline, an honest health-baseline tracker. Tone: warm, clinical-but-not-cold, specific. Write like a thoughtful friend who knows what these tests cost and what they tell you.
+
+INPUTS (in the user message):
+- profile { firstName, age, sex, diet, sun, city, pcosTracking }
+- attentionMarkers: marker ids the user needs to re-test
+- forecastSummary | null: { markerId, last_value, current_estimate, projected_date, threshold } for the first forecastable attention marker
+- topPanels: top 3 rule-scored panels, each with { id, lab, name, price, markers, sampleType, coveredMarkers, extraMarkers, waste }
+
+JOB:
+1. Pick the single best panel for this user → \`primaryPanelId\`.
+2. For each of the top panels, write a 1-2 sentence "why this for you" rationale (~20-50 words). Weave in:
+   - the user's profile (diet / sun / sex / PCOS opt-in) when it actually matters,
+   - the forecast timing if \`forecastSummary\` is present,
+   - the panel's specifics (coverage, price, home collection, bundle waste).
+3. If 2+ attention markers AND one of the top panels covers all of them at a lower total than the cheapest single-marker panels combined, write a \`bundleHint\` stating the savings explicitly ("Booking the X (₹Y) saves ₹Z vs separate D and B12 tests."). Otherwise \`bundleHint = null\`.
+
+NON-NEGOTIABLES — VIOLATING ANY OF THESE IS A FAILURE:
+A. NEVER prescribe a dose, supplement amount, or medication. Banned: "take {N} IU", "supplement with X mg".
+B. NEVER diagnose. "You are deficient", "you have X" — banned.
+C. NEVER use urgency words (URGENT, ALERT, DANGER) or ALL CAPS.
+D. Caveat predictions ("likely", "we'd expect"). NEVER definitive ("your D is now 27").
+E. Reference firstName naturally — at most once across all rationales, not in every sentence.
+F. Mention waste only when it's genuinely high (>3 extra markers AND coverage is just 1 marker).
+
+OUTPUT: a single JSON object, no prose around it, no markdown fences.
+
+{
+  "primaryPanelId":  string,
+  "rationales": [
+    { "panelId": string, "rationale": string }
+  ],
+  "bundleHint":      string | null,
+  "safety_check":    "pass" | "fail"
+}
+
+SAFETY CHECK (run before responding): re-read your draft. Any dose number + unit (IU/mg/mcg)? Any diagnosis? Any ALL CAPS or urgency word? If yes — rewrite, then re-check. Only respond with safety_check:"pass" when clean.`;
+
 // ── Server-side safety checks ──────────────────────────────────────────────
 const BANNED_PATTERNS: RegExp[] = [
   /\b\d+\s*(IU|mg|mcg|µg|μg)\b/i, // dosing
@@ -135,11 +173,15 @@ const BANNED_PATTERNS: RegExp[] = [
   /\byou (have|are)\s+(low|deficient|insufficient)\b/i, // diagnostic phrasing
 ];
 
+/** True if any §7-banned phrase appears in `text`. Reusable across response shapes. */
+export function containsBannedPattern(text: string): boolean {
+  return BANNED_PATTERNS.some((re) => re.test(text));
+}
+
 /** §7 gate for generated nudge copy. */
 export function passesSafety(payload: NudgePayload): boolean {
-  const text = JSON.stringify(payload);
   return (
-    !BANNED_PATTERNS.some((re) => re.test(text)) &&
+    !containsBannedPattern(JSON.stringify(payload)) &&
     payload.safety_check === "pass"
   );
 }

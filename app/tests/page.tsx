@@ -15,6 +15,13 @@ import { PANELS, lastDataRefresh } from "@/lib/panels";
 import { recommend, type ScoredPanel } from "@/lib/recommend";
 import { formatDate } from "@/lib/format";
 import { Blob, Disclaimer, Icon, Wordmark } from "@/components/ui";
+import {
+  buildExplainInput,
+  type ForecastSummary,
+  type RecommendExplainOutput,
+} from "@/lib/recommend-explain";
+import { buildForecast } from "@/lib/forecast";
+import { softDate } from "@/lib/format";
 
 export default function TestsPage() {
   return (
@@ -28,6 +35,7 @@ function TestsPageInner() {
   const router = useRouter();
   const search = useSearchParams();
   const hydrated = useHydrated();
+  const profile = useBaseline((s) => s.profile);
   const parse = useBaseline((s) => s.parse);
 
   const queryMarkers = useMemo(() => {
@@ -42,6 +50,8 @@ function TestsPageInner() {
   const [selectedLabs, setSelectedLabs] = useState<string[]>([]);
   const [homeOnly, setHomeOnly] = useState(false);
   const [initFromStore, setInitFromStore] = useState(false);
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [bundleHint, setBundleHint] = useState<string | null>(null);
 
   // Default selected: from URL ?markers=, else from the user's low/watch markers.
   useEffect(() => {
@@ -58,6 +68,75 @@ function TestsPageInner() {
       setInitFromStore(true);
     }
   }, [queryMarkers, hydrated, parse, initFromStore]);
+
+  // Personalised "why this for you" rationales for the top recommended panels.
+  // Fires when the active set of attention markers / lab filters changes.
+  // Falls back gracefully if no key / §7 gate fails — the page still renders.
+  const recommendedKey = useMemo(
+    () => selectedMarkers.slice().sort().join("|"),
+    [selectedMarkers],
+  );
+  const labsKey = useMemo(
+    () => selectedLabs.slice().sort().join("|"),
+    [selectedLabs],
+  );
+
+  useEffect(() => {
+    if (!hydrated || !profile || selectedMarkers.length === 0) {
+      setExplanations({});
+      setBundleHint(null);
+      return;
+    }
+    // Compute the top-3 here so this effect doesn't depend on the `recommended`
+    // array reference (which re-creates each render).
+    let p = PANELS;
+    if (selectedLabs.length > 0) p = p.filter((x) => selectedLabs.includes(x.lab));
+    if (homeOnly) p = p.filter((x) => x.sampleType === "home" || x.sampleType === "both");
+    const top = recommend(selectedMarkers, p).slice(0, 3);
+    if (top.length === 0) {
+      setExplanations({});
+      setBundleHint(null);
+      return;
+    }
+
+    // Forecast summary for the first forecastable attention marker (D/B12) —
+    // gives the LLM the timing context to write "before late October" copy.
+    const fcId = selectedMarkers.find((m) => MARKERS[m]?.inV1Forecast);
+    const fcReading = parse?.markers.find((m) => m.markerId === fcId);
+    let forecastSummary: ForecastSummary | null = null;
+    if (fcId && fcReading && parse?.testDate && MARKERS[fcId]?.thresholds) {
+      const f = buildForecast(fcId, fcReading.value, new Date(parse.testDate), profile);
+      forecastSummary = {
+        markerId: fcId,
+        last_value: fcReading.value,
+        current_estimate: fcReading.value,
+        projected_date: f.crossingDate ? softDate(f.crossingDate) : "the coming months",
+        threshold: MARKERS[fcId]!.thresholds!.low,
+      };
+    }
+
+    const input = buildExplainInput(profile, selectedMarkers, forecastSummary, top);
+    const controller = new AbortController();
+    fetch("/api/recommend-explain", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: controller.signal,
+    })
+      .then((r) => r.json())
+      .then((data: RecommendExplainOutput & { source?: string }) => {
+        const map: Record<string, string> = {};
+        for (const r of data.rationales || []) map[r.panelId] = r.rationale;
+        setExplanations(map);
+        setBundleHint(data.bundleHint ?? null);
+      })
+      .catch(() => {
+        /* aborted or failed — cards still render, just without LLM copy */
+      });
+
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, profile, recommendedKey, labsKey, homeOnly]);
 
   const toggleMarker = (m: string) =>
     setSelectedMarkers((s) => (s.includes(m) ? s.filter((x) => x !== m) : [...s, m]));
@@ -301,9 +380,48 @@ function TestsPageInner() {
                 Verified {formatDate(lastDataRefresh())}
               </span>
             </div>
+
+            {bundleHint && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "12px 16px",
+                  borderRadius: 16,
+                  background: tok.ink,
+                  color: tok.white,
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    flex: "0 0 auto",
+                    width: 26,
+                    height: 26,
+                    borderRadius: 99,
+                    background: tok.red,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Icon name="spark" size={13} stroke={tok.white} strokeWidth={2.5} />
+                </div>
+                <span style={{ fontFamily: tok.font, fontSize: 13, fontWeight: 700, lineHeight: 1.45 }}>
+                  {bundleHint}
+                </span>
+              </div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
               {recommended.map((s, i) => (
-                <PanelCard key={s.panel.id} s={s} recommended={i === 0} />
+                <PanelCard
+                  key={s.panel.id}
+                  s={s}
+                  recommended={i === 0}
+                  rationale={explanations[s.panel.id]}
+                />
               ))}
             </div>
           </div>
@@ -356,7 +474,15 @@ function TestsPageInner() {
   );
 }
 
-function PanelCard({ s, recommended }: { s: ScoredPanel; recommended: boolean }) {
+function PanelCard({
+  s,
+  recommended,
+  rationale,
+}: {
+  s: ScoredPanel;
+  recommended: boolean;
+  rationale?: string;
+}) {
   const p = s.panel;
   const showWaste =
     s.extraMarkers.length > 2 && s.waste > 0.5 && s.coveredMarkers.length > 0;
@@ -508,6 +634,33 @@ function PanelCard({ s, recommended }: { s: ScoredPanel; recommended: boolean })
           </span>
         )}
       </div>
+
+      {rationale && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            borderRadius: 14,
+            background: tok.sageSoft,
+            display: "flex",
+            gap: 8,
+            alignItems: "flex-start",
+          }}
+        >
+          <Icon name="spark" size={12} stroke={tok.ink2} strokeWidth={2.2} />
+          <span
+            style={{
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 600,
+              color: tok.ink2,
+              lineHeight: 1.5,
+            }}
+          >
+            {rationale}
+          </span>
+        </div>
+      )}
 
       {showWaste && (
         <div
