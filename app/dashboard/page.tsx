@@ -25,7 +25,7 @@ import {
 } from "@/components/ui";
 import { ForecastChart } from "@/components/ForecastChart";
 import { PcosLens } from "@/components/PcosLens";
-import type { Forecast, MarkerReading, Profile } from "@/lib/types";
+import type { Forecast, MarkerReading, Plan, Profile } from "@/lib/types";
 
 function heroStatusText(m: MarkerReading, sex: Profile["sex"]): string {
   if (m.status === "in") return "In range";
@@ -44,6 +44,8 @@ export default function DashboardPage() {
   const hydrated = useHydrated();
   const profile = useBaseline((s) => s.profile);
   const parse = useBaseline((s) => s.parse);
+  const plan = useBaseline((s) => s.plan);
+  const accountabilityEmail = useBaseline((s) => s.accountabilityEmail);
 
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -564,98 +566,14 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* lifestyle CTA */}
-        <button
-          type="button"
-          onClick={() => router.push("/improve")}
-          className="hi-card"
-          style={{
-            marginTop: 22,
-            padding: "18px 20px",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            textAlign: "left",
-            cursor: "pointer",
-            background: tok.ink,
-            border: "none",
-            color: tok.white,
-            position: "relative",
-            overflow: "hidden",
-            width: "100%",
-          }}
-        >
-          <Blob size={140} top={-40} right={-50} color="rgba(202,0,19,.28)" blur={28} />
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 16,
-              background: "rgba(255,255,255,.08)",
-              border: "1px solid rgba(255,255,255,.12)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 24,
-              flex: "0 0 auto",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            🌱
-          </div>
-          <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1 }}>
-            <div
-              style={{
-                fontFamily: tok.font,
-                fontSize: 10,
-                fontWeight: 800,
-                letterSpacing: "0.12em",
-                color: "rgba(255,255,255,.6)",
-              }}
-            >
-              LIFESTYLE
-            </div>
-            <div
-              style={{
-                fontFamily: tok.font,
-                fontSize: 17,
-                fontWeight: 900,
-                letterSpacing: "-0.01em",
-                marginTop: 2,
-              }}
-            >
-              Things you can do<span style={{ color: tok.red }}>.</span>
-            </div>
-            <div
-              style={{
-                fontFamily: tok.font,
-                fontSize: 12,
-                fontWeight: 500,
-                color: "rgba(255,255,255,.65)",
-                marginTop: 4,
-                lineHeight: 1.45,
-              }}
-            >
-              Personalised moves for your markers — food, sun, movement. No
-              supplements, no diagnoses.
-            </div>
-          </div>
-          <span
-            style={{
-              flex: "0 0 auto",
-              fontFamily: tok.font,
-              fontSize: 14,
-              fontWeight: 800,
-              color: tok.white,
-              opacity: 0.8,
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            →
-          </span>
-        </button>
+        {/* plan tile — active plan, in-progress, or call to build */}
+        <PlanTile
+          plan={plan}
+          accountabilityEmail={accountabilityEmail}
+          onOpenPlan={() => router.push("/plan")}
+          onStartPlan={() => router.push("/intake")}
+          onOpenImprove={() => router.push("/improve")}
+        />
 
         {/* other markers */}
         {others.length > 0 && (
@@ -755,5 +673,399 @@ export default function DashboardPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// ─── Plan tile ──────────────────────────────────────────────────────────────
+
+function currentWeekNumber(plan: Plan): number {
+  if (!plan.startedAt) return 1;
+  const start = new Date(plan.startedAt).getTime();
+  const elapsedMs = Date.now() - start;
+  const weeks = Math.floor(elapsedMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+  return Math.max(1, Math.min(plan.weeks.length, weeks));
+}
+
+function PlanTile({
+  plan,
+  accountabilityEmail,
+  onOpenPlan,
+  onStartPlan,
+  onOpenImprove,
+}: {
+  plan: Plan | null;
+  accountabilityEmail: string | null;
+  onOpenPlan: () => void;
+  onStartPlan: () => void;
+  onOpenImprove: () => void;
+}) {
+  // No plan yet → invitation tile.
+  if (!plan) {
+    return (
+      <button
+        type="button"
+        onClick={onStartPlan}
+        className="hi-card"
+        style={{
+          marginTop: 22,
+          padding: "20px 22px",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          textAlign: "left",
+          cursor: "pointer",
+          background: tok.ink,
+          border: "none",
+          color: tok.white,
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
+        <Blob size={140} top={-40} right={-50} color="rgba(202,0,19,.28)" blur={28} />
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 16,
+            background: "rgba(255,255,255,.08)",
+            border: "1px solid rgba(255,255,255,.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 24,
+            flex: "0 0 auto",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          🌱
+        </div>
+        <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1 }}>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: "0.12em",
+              color: "rgba(255,255,255,.6)",
+            }}
+          >
+            YOUR PLAN
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 18,
+              fontWeight: 900,
+              letterSpacing: "-0.01em",
+              marginTop: 2,
+            }}
+          >
+            Build your four-week plan<span style={{ color: tok.red }}>.</span>
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "rgba(255,255,255,.65)",
+              marginTop: 4,
+              lineHeight: 1.45,
+            }}
+          >
+            A few quick questions, then a curated plan with weekly check-ins.
+          </div>
+        </div>
+        <span
+          style={{
+            flex: "0 0 auto",
+            fontFamily: tok.font,
+            fontSize: 14,
+            fontWeight: 800,
+            color: tok.white,
+            opacity: 0.8,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          →
+        </span>
+      </button>
+    );
+  }
+
+  // Plan exists but not accepted → finish flow.
+  if (!plan.startedAt) {
+    return (
+      <button
+        type="button"
+        onClick={onOpenPlan}
+        className="hi-card"
+        style={{
+          marginTop: 22,
+          padding: "20px 22px",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          textAlign: "left",
+          cursor: "pointer",
+          background: tok.white,
+          border: `1px solid ${tok.red}`,
+          width: "100%",
+        }}
+      >
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 16,
+            background: tok.redSoft,
+            border: `1px solid ${tok.redMid}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 24,
+            flex: "0 0 auto",
+          }}
+        >
+          📋
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 10,
+              fontWeight: 800,
+              letterSpacing: "0.12em",
+              color: tok.red,
+              textTransform: "uppercase",
+            }}
+          >
+            Plan ready
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 17,
+              fontWeight: 900,
+              color: tok.ink,
+              letterSpacing: "-0.01em",
+              marginTop: 2,
+            }}
+          >
+            Lock in your accountability email
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 500,
+              color: tok.ink2,
+              marginTop: 4,
+              lineHeight: 1.45,
+            }}
+          >
+            One step left — point us at an inbox and we start the {plan.weeks.length}-week run.
+          </div>
+        </div>
+        <span
+          style={{
+            flex: "0 0 auto",
+            fontFamily: tok.font,
+            fontSize: 14,
+            fontWeight: 800,
+            color: tok.red,
+          }}
+        >
+          →
+        </span>
+      </button>
+    );
+  }
+
+  // Active plan — show week + focus + accountability email.
+  const week = currentWeekNumber(plan);
+  const current = plan.weeks.find((w) => w.week === week) ?? plan.weeks[0];
+
+  return (
+    <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
+      <button
+        type="button"
+        onClick={onOpenPlan}
+        className="hi-card"
+        style={{
+          padding: "22px 22px 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+          textAlign: "left",
+          cursor: "pointer",
+          background: tok.ink,
+          border: "none",
+          color: tok.white,
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
+        <Blob size={160} top={-50} right={-60} color="rgba(202,0,19,.3)" blur={32} />
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 16,
+              background: tok.red,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: "0 0 auto",
+              boxShadow: tok.shadowRed,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                color: "rgba(255,255,255,.7)",
+              }}
+            >
+              WEEK
+            </div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 18,
+                fontWeight: 900,
+                lineHeight: 1,
+                marginTop: 1,
+              }}
+            >
+              {week}
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                color: "rgba(255,255,255,.6)",
+                textTransform: "uppercase",
+              }}
+            >
+              This week
+            </div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 17,
+                fontWeight: 900,
+                color: tok.white,
+                letterSpacing: "-0.01em",
+                marginTop: 2,
+                lineHeight: 1.25,
+              }}
+            >
+              {current.focus}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          {current.moves.slice(0, 2).map((m, i) => (
+            <span
+              key={i}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 12px",
+                borderRadius: 99,
+                background: "rgba(255,255,255,.08)",
+                border: "1px solid rgba(255,255,255,.12)",
+                fontFamily: tok.font,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "rgba(255,255,255,.9)",
+              }}
+            >
+              <span>{m.emoji}</span>
+              <span>{m.title}</span>
+            </span>
+          ))}
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            paddingTop: 12,
+            borderTop: "1px dashed rgba(255,255,255,.18)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 11,
+              fontWeight: 600,
+              color: "rgba(255,255,255,.6)",
+              lineHeight: 1.45,
+            }}
+          >
+            {accountabilityEmail
+              ? `${plan.nudgeTracks.weeklyCheckin.day} check-ins → ${accountabilityEmail}`
+              : `${plan.nudgeTracks.weeklyCheckin.day} check-ins active`}
+          </div>
+          <span
+            style={{
+              fontFamily: tok.font,
+              fontSize: 11,
+              fontWeight: 800,
+              color: tok.white,
+              opacity: 0.85,
+            }}
+          >
+            Open plan →
+          </span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        onClick={onOpenImprove}
+        style={{
+          background: "transparent",
+          border: "none",
+          padding: "8px 4px",
+          fontFamily: tok.font,
+          fontSize: 12,
+          fontWeight: 700,
+          color: tok.mute,
+          textAlign: "left",
+          cursor: "pointer",
+          alignSelf: "flex-start",
+        }}
+      >
+        See the full move library →
+      </button>
+    </div>
   );
 }

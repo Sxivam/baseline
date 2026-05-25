@@ -63,7 +63,11 @@ export default function UploadPage() {
       status: computeStatus(m.markerId, m.value, profile!.sex),
     }));
     setParse({ markers: finalMarkers, testDate: date, labName, parseConfidence });
-    router.push("/dashboard");
+    // First time through, route to the intake → plan reveal. Returning
+    // users who already accepted a plan skip straight to the dashboard.
+    const { intake, plan } = useBaseline.getState();
+    if (intake && plan?.startedAt) router.push("/dashboard");
+    else router.push("/intake");
   }
 
   async function handleFile(file: File | undefined) {
