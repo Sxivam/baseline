@@ -40,6 +40,7 @@ export interface LifestyleInput {
     sun: string;
     city: string;
     pcosTracking: boolean;
+    trtTracking: boolean;
   };
   markers: MarkerSummary[];
 }
@@ -76,6 +77,7 @@ export function buildLifestyleInput(
       sun: profile.sun,
       city: profile.city,
       pcosTracking: profile.pcosTracking,
+      trtTracking: profile.trtTracking,
     },
     markers,
   };
@@ -256,6 +258,20 @@ function candidates(input: LifestyleInput): CandidateMove[] {
         "Same bedtime ±30 min, 7+ hours, and a 20-minute walk or strength session four times a week. Track how your cycle feels alongside — patterns often emerge in a month.",
       markersHelped: [],
       priority: 65,
+    });
+  }
+
+  // ── TRT / HRT cycle tracking (opt-in) ─────────────────────────────────
+  if (profile.trtTracking) {
+    moves.push({
+      id: "trt-logbook",
+      emoji: "📓",
+      title: "Log every shot, every stage",
+      why: "You opted into HRT cycle tracking. Patterns across stages — mood, energy, libido, sleep — are what turn anecdotes into a clean trend you can show your clinician.",
+      action:
+        "Log mood + energy + a one-line note on injection day and again 3-4 days later. Re-test lipids and hematocrit every 8-12 weeks; bring the log to your next consult.",
+      markersHelped: ["hdl", "ldl"],
+      priority: 78,
     });
   }
 

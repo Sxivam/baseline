@@ -25,6 +25,7 @@ import {
 } from "@/components/ui";
 import { ForecastChart } from "@/components/ForecastChart";
 import { PcosLens } from "@/components/PcosLens";
+import { TrtLens } from "@/components/TrtLens";
 import type { Forecast, MarkerReading, Plan, Profile } from "@/lib/types";
 
 function heroStatusText(m: MarkerReading, sex: Profile["sex"]): string {
@@ -659,6 +660,12 @@ export default function DashboardPage() {
         {profile.pcosTracking && (
           <div style={{ marginTop: 18 }}>
             <PcosLens markers={markers} />
+          </div>
+        )}
+
+        {profile.trtTracking && (
+          <div style={{ marginTop: 18 }}>
+            <TrtLens markers={markers} />
           </div>
         )}
 

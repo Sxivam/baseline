@@ -11,12 +11,15 @@ import type {
   ParseResult,
   Plan,
   Profile,
+  TrtLog,
+  TrtStageEntry,
 } from "./types";
 
 interface BaselineState {
   profile: Profile | null;
   parse: ParseResult | null;
   cycle: CycleLog | null;
+  trt: TrtLog | null;
   nudges: Record<string, NudgePayload>; // keyed by markerId
   intake: IntakeAnswers | null;
   plan: Plan | null;
@@ -25,6 +28,8 @@ interface BaselineState {
   setProfile: (p: Profile) => void;
   setParse: (r: ParseResult) => void;
   setCycle: (c: CycleLog) => void;
+  setTrt: (t: TrtLog) => void;
+  addTrtEntry: (e: TrtStageEntry) => void;
   setNudge: (markerId: string, n: NudgePayload) => void;
   setIntake: (a: IntakeAnswers) => void;
   setPlan: (p: Plan | null) => void;
@@ -39,6 +44,7 @@ export const useBaseline = create<BaselineState>()(
       profile: null,
       parse: null,
       cycle: null,
+      trt: null,
       nudges: {},
       intake: null,
       plan: null,
@@ -47,6 +53,18 @@ export const useBaseline = create<BaselineState>()(
       setProfile: (profile) => set({ profile }),
       setParse: (parse) => set({ parse }),
       setCycle: (cycle) => set({ cycle }),
+      setTrt: (trt) => set({ trt }),
+      addTrtEntry: (entry) =>
+        set((s) => ({
+          trt: s.trt
+            ? { ...s.trt, entries: [...s.trt.entries, entry] }
+            : {
+                compound: null,
+                lastInjectionDate: null,
+                cycleLengthDays: null,
+                entries: [entry],
+              },
+        })),
       setNudge: (markerId, n) =>
         set((s) => ({ nudges: { ...s.nudges, [markerId]: n } })),
       setIntake: (intake) => set({ intake }),
@@ -64,6 +82,7 @@ export const useBaseline = create<BaselineState>()(
           profile: null,
           parse: null,
           cycle: null,
+          trt: null,
           nudges: {},
           intake: null,
           plan: null,

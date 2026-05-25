@@ -13,6 +13,8 @@ export interface Profile {
   city: string;
   /** female users can opt into PCOS-relevant lifestyle tracking */
   pcosTracking: boolean;
+  /** male users on prescribed HRT/TRT can opt into cycle tracking */
+  trtTracking: boolean;
 }
 
 export type MarkerStatus = "in" | "watch" | "low";
@@ -58,6 +60,38 @@ export interface CycleLog {
   regularity: "regular" | "irregular" | "not-sure" | null;
 }
 
+// ── HRT / TRT (male opt-in tracking) ───────────────────────────────────────
+// Pure tracking for someone already on a prescribed protocol. Never recommend
+// doses, esters, or schedules. Never imply a diagnosis. Tone: logbook.
+
+export type TrtCompound =
+  | "propionate"
+  | "cypionate"
+  | "enanthate"
+  | "undecanoate"
+  | "other";
+
+/** One observation entry across the post-injection arc. Stages 1-5 map roughly
+ *  to peak → steady → descent → low → trough; user-controlled, not clinical. */
+export interface TrtStageEntry {
+  stage: 1 | 2 | 3 | 4 | 5;
+  loggedAt: string; // ISO
+  mood?: number; // 1-10
+  energy?: number; // 1-10
+  libido?: number; // 1-10
+  notes?: string;
+}
+
+export interface TrtLog {
+  compound: TrtCompound | null;
+  lastInjectionDate: string | null; // ISO
+  /** Free-text label the user maintains themselves; never set by Baseline. */
+  doseLabel?: string;
+  /** Typical days between shots — driven by compound. Defaults: prop=3, cyp/ena=7. */
+  cycleLengthDays: number | null;
+  entries: TrtStageEntry[];
+}
+
 /** LLM-generated nudge email payload (see prompts.md copy-gen schema). */
 export interface NudgePayload {
   subject: string;
@@ -86,6 +120,7 @@ export interface IntakeAnswers {
   refined_carbs?: "daily" | "few-week" | "rarely";
   walk_after_meals?: "always" | "sometimes" | "never";
   cycle_regular?: "yes" | "no" | "not-sure"; // PCOS-only
+  trt_logging?: "every-shot" | "weekly" | "monthly" | "rarely"; // TRT-only
   hydration_l?: number; // optional
 }
 

@@ -23,12 +23,16 @@ const DIETS: Diet[] = ["veg", "vegan", "non-veg", "mixed"];
 const SUNS: Sun[] = ["indoor", "mixed", "outdoor"];
 const SEXES: Sex[] = ["female", "male"];
 
-function PcosOptIn({
+function OptIn({
   checked,
   onToggle,
+  label,
+  description,
 }: {
   checked: boolean;
   onToggle: () => void;
+  label: string;
+  description: string;
 }) {
   return (
     <button
@@ -78,7 +82,7 @@ function PcosOptIn({
           className="hi-label"
           style={{ color: checked ? tok.red : tok.mute }}
         >
-          PCOS lifestyle tracking
+          {label}
         </span>
         <span
           style={{
@@ -91,8 +95,7 @@ function PcosOptIn({
             lineHeight: 1.45,
           }}
         >
-          Track cycle regularity and the metabolic markers alongside your
-          baseline. Lifestyle awareness — not a PCOS screen or diagnosis.
+          {description}
         </span>
       </span>
     </button>
@@ -110,6 +113,7 @@ export default function StartPage() {
   const [sun, setSun] = useState<Sun>("indoor");
   const [city, setCity] = useState("Hyderabad");
   const [pcos, setPcos] = useState(false);
+  const [trt, setTrt] = useState(false);
 
   function submit() {
     const profile: Profile = {
@@ -120,6 +124,7 @@ export default function StartPage() {
       sun,
       city: city.trim() || "—",
       pcosTracking: sex === "female" && pcos,
+      trtTracking: sex === "male" && trt,
     };
     setProfile(profile);
     router.push("/upload");
@@ -332,7 +337,20 @@ export default function StartPage() {
               </Field>
 
               {sex === "female" && (
-                <PcosOptIn checked={pcos} onToggle={() => setPcos((p) => !p)} />
+                <OptIn
+                  checked={pcos}
+                  onToggle={() => setPcos((p) => !p)}
+                  label="PCOS lifestyle tracking"
+                  description="Track cycle regularity and the metabolic markers alongside your baseline. Lifestyle awareness — not a PCOS screen or diagnosis."
+                />
+              )}
+              {sex === "male" && (
+                <OptIn
+                  checked={trt}
+                  onToggle={() => setTrt((p) => !p)}
+                  label="HRT / TRT cycle tracking"
+                  description="On a prescribed protocol? Log injections, post-shot stages, and watch the lipid + glucose markers move alongside. Tracking only — Baseline never prescribes."
+                />
               )}
             </div>
 

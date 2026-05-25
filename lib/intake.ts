@@ -146,6 +146,18 @@ const Q: Record<string, IntakeQuestion> = {
       { value: "not-sure", label: "Not sure" },
     ],
   },
+  trt_logging: {
+    key: "trt_logging",
+    prompt: "How often do you currently log how you feel on cycle?",
+    hint: "Honest answer — Baseline meets you where you are.",
+    kind: "single",
+    choices: [
+      { value: "every-shot", label: "Every shot" },
+      { value: "weekly", label: "Weekly-ish" },
+      { value: "monthly", label: "Now and then" },
+      { value: "rarely", label: "Not really" },
+    ],
+  },
   hydration_l: {
     key: "hydration_l",
     prompt: "Litres of water on a typical day?",
@@ -211,6 +223,9 @@ export function buildIntake(
 
   // PCOS opt-in.
   if (profile.pcosTracking) out.push(Q.cycle_regular);
+
+  // TRT opt-in.
+  if (profile.trtTracking) out.push(Q.trt_logging);
 
   // Dedupe (just in case) and cap at 7 — keep it short.
   const seen = new Set<string>();
