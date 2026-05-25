@@ -14,8 +14,8 @@ Built for the Sprinto Growth Associate take-home, May 2026.
 | `/upload` | PDF dropzone → `/api/parse` (LLM via OpenRouter). Manual entry is always one click away |
 | `/dashboard` | Per-marker status (in / watch / low). Hero card + forecast preview + queued nudge |
 | `/forecast/[marker]` | Decay forecast for D & B12 — observed curve, projected crossing, factor explainer |
-| `/nudges` | Cadence overview — every queued nudge with date, status, and a manual "send to my inbox" trigger |
-| `/nudges/[id]/preview` | The rendered email from `/api/generate-nudge` — the loop closing |
+| `/improve` | Personalised lifestyle moves — cross-marker, profile-aware. LLM-generated, §7-gated (behavioural only — no doses, no diagnoses) |
+| `/nudges/[id]/preview` | Rendered email from `/api/generate-nudge`. Orphaned in the UI; production sends fire silently via the daily cron — this route is only for "view in browser" links and screenshots |
 | `/tests` | Aggregated home-based blood-test marketplace (PharmEasy, Tata 1mg, Thyrocare, Redcliffe) — sorted by what you actually need to re-test |
 
 ## Non-negotiable: §7
@@ -101,8 +101,8 @@ The mechanic isn't "buy a test, get a result" — it's the loop that follows. Fo
 In production, a daily cron (Vercel Cron or a GitHub Action) hits an internal route at ~09:00 IST, finds every user whose `forecast.nudgeDate === today`, and POSTs each to `/api/send-nudge`. That route uses the cached LLM copy from `/api/generate-nudge` (or `staticNudge` as a §7-safe fallback), renders the HTML via `lib/email-template.ts`, and ships it through **Resend**.
 
 For the demo:
-- `/nudges` is the cadence overview — one row per forecastable marker with a reading, showing the schedule and a manual "Send to me" button.
-- Inside `/nudges/[id]/preview`, the same manual trigger sits below the email card.
+- The cadence is intentionally invisible in the UI — users just get the email. The dashboard shows a soft "we'll check in" tile with no specific schedule or buttons.
+- `/nudges/[id]/preview` still resolves so emails can include a "view in browser" link, but nothing in the app navigates to it.
 - Drop a `RESEND_API_KEY` in `.env.local` (or the Vercel project's env) to switch real sends on. Without one, the button still works but returns 503 + a friendly hint — the rest of the loop still renders deterministically.
 
 ## Nightly price refresh

@@ -87,3 +87,11 @@ body {
     transform: translateY(0);
   }
 }
+@keyframes bl-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

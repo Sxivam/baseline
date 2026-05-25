@@ -564,6 +564,99 @@ export default function DashboardPage() {
           )}
         </div>
 
+        {/* lifestyle CTA */}
+        <button
+          type="button"
+          onClick={() => router.push("/improve")}
+          className="hi-card"
+          style={{
+            marginTop: 22,
+            padding: "18px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            textAlign: "left",
+            cursor: "pointer",
+            background: tok.ink,
+            border: "none",
+            color: tok.white,
+            position: "relative",
+            overflow: "hidden",
+            width: "100%",
+          }}
+        >
+          <Blob size={140} top={-40} right={-50} color="rgba(202,0,19,.28)" blur={28} />
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              background: "rgba(255,255,255,.08)",
+              border: "1px solid rgba(255,255,255,.12)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 24,
+              flex: "0 0 auto",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            🌱
+          </div>
+          <div style={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1 }}>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.12em",
+                color: "rgba(255,255,255,.6)",
+              }}
+            >
+              LIFESTYLE
+            </div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 17,
+                fontWeight: 900,
+                letterSpacing: "-0.01em",
+                marginTop: 2,
+              }}
+            >
+              Things you can do<span style={{ color: tok.red }}>.</span>
+            </div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 12,
+                fontWeight: 500,
+                color: "rgba(255,255,255,.65)",
+                marginTop: 4,
+                lineHeight: 1.45,
+              }}
+            >
+              Personalised moves for your markers — food, sun, movement. No
+              supplements, no diagnoses.
+            </div>
+          </div>
+          <span
+            style={{
+              flex: "0 0 auto",
+              fontFamily: tok.font,
+              fontSize: 14,
+              fontWeight: 800,
+              color: tok.white,
+              opacity: 0.8,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            →
+          </span>
+        </button>
+
         {/* other markers */}
         {others.length > 0 && (
           <>
