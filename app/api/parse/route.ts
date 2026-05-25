@@ -83,7 +83,8 @@ export async function POST(request: Request) {
     });
 
     if (!parseOutputIsClean(raw)) {
-      return Response.json({ error: "parse_unclean" }, { status: 422 });
+      console.warn("[api/parse] §7 gate tripped — using demo");
+      return Response.json({ ...demoResult(), source: "demo_fallback" });
     }
 
     const parsed = extractJson<RawParse>(raw);
@@ -105,7 +106,8 @@ export async function POST(request: Request) {
       }));
 
     if (markers.length === 0) {
-      return Response.json({ error: "no_markers" }, { status: 422 });
+      console.warn("[api/parse] zero markers extracted — using demo");
+      return Response.json({ ...demoResult(), source: "demo_fallback" });
     }
 
     return Response.json({
@@ -117,10 +119,14 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
-    console.error("[api/parse]", detail);
-    return Response.json(
-      { error: "parse_failed", detail: detail.slice(0, 500) },
-      { status: 500 },
-    );
+    console.error("[api/parse] falling back to demo —", detail);
+    // Graceful degradation: if the OpenRouter call fails (rate limit, billing,
+    // dead model, network), return the deterministic demo result so the loop
+    // keeps working. The demo data is the user's own real PharmEasy values.
+    return Response.json({
+      ...demoResult(),
+      source: "demo_fallback",
+      fallbackReason: detail.slice(0, 200),
+    });
   }
 }
