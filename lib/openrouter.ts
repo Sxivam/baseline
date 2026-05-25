@@ -1,11 +1,12 @@
-// OpenRouter client — Baseline calls Claude models through OpenRouter's
+// OpenRouter client — Baseline calls LLMs through OpenRouter's
 // OpenAI-compatible API. Server-only (uses the secret key).
+// Default model is a free tier option; override per-job via env vars.
 
 const BASE_URL =
   process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
 
 const DEFAULT_MODEL =
-  process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-4.5";
+  process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp:free";
 
 export function hasOpenRouterKey(): boolean {
   return Boolean(process.env.OPENROUTER_API_KEY);

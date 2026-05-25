@@ -34,7 +34,7 @@ The PCOS pathway (female users) is **lifestyle tracking + awareness only** — n
 - **Next.js 16** (App Router, Turbopack) + TypeScript
 - **Tailwind v4** + Nunito (`next/font/google`)
 - **Zustand** with localStorage persistence
-- **OpenRouter** — OpenAI-compatible Claude models, called server-side, for PDF parsing and personalised nudge copy
+- **OpenRouter** — OpenAI-compatible API for LLM calls (server-side) — PDF parsing and personalised nudge copy. Default model is `google/gemini-2.0-flash-exp:free`; override per-job via env vars
 
 ## Quick start
 

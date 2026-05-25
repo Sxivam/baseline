@@ -350,7 +350,7 @@ export default function UploadPage() {
                         textTransform: "uppercase",
                       }}
                     >
-                      Claude reads it in seconds
+                      Parsed in seconds
                     </span>
                   </div>
                 </div>
@@ -561,7 +561,7 @@ function ParsingState() {
       />
       <div style={{ textAlign: "center" }}>
         <div style={{ fontFamily: tok.font, fontSize: 15, fontWeight: 800 }}>
-          Claude is reading your report…
+          Reading your report…
         </div>
         <div style={{ fontFamily: tok.font, fontSize: 12, fontWeight: 500, color: tok.mute, marginTop: 4 }}>
           Pulling out your markers
