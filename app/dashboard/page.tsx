@@ -539,24 +539,43 @@ export default function DashboardPage() {
                   >
                     We&apos;ll remind you to get ahead of it — act, then re-test.
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/nudges/${hero.markerId}/preview`)}
-                    style={{
-                      marginTop: 14,
-                      padding: "9px 16px",
-                      borderRadius: 99,
-                      border: "1px solid rgba(255,255,255,.2)",
-                      background: "transparent",
-                      color: tok.white,
-                      fontFamily: tok.font,
-                      fontSize: 12,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Preview email →
-                  </button>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/nudges/${hero.markerId}/preview`)}
+                      style={{
+                        padding: "9px 16px",
+                        borderRadius: 99,
+                        border: "1px solid rgba(255,255,255,.2)",
+                        background: "transparent",
+                        color: tok.white,
+                        fontFamily: tok.font,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Preview email →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/nudges")}
+                      style={{
+                        padding: "9px 16px",
+                        borderRadius: 99,
+                        border: "none",
+                        background: tok.red,
+                        color: tok.white,
+                        fontFamily: tok.font,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        boxShadow: tok.shadowRed,
+                      }}
+                    >
+                      See cadence
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

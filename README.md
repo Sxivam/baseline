@@ -14,6 +14,7 @@ Built for the Sprinto Growth Associate take-home, May 2026.
 | `/upload` | PDF dropzone → `/api/parse` (Claude). Manual entry is always one click away |
 | `/dashboard` | Per-marker status (in / watch / low). Hero card + forecast preview + queued nudge |
 | `/forecast/[marker]` | Decay forecast for D & B12 — observed curve, projected crossing, factor explainer |
+| `/nudges` | Cadence overview — every queued nudge with date, status, and a manual "send to my inbox" trigger |
 | `/nudges/[id]/preview` | The rendered email from `/api/generate-nudge` — the loop closing |
 | `/tests` | Aggregated home-based blood-test marketplace (PharmEasy, Tata 1mg, Thyrocare, Redcliffe) — sorted by what you actually need to re-test |
 
@@ -50,28 +51,35 @@ The app runs at `http://localhost:3000` (or whatever port the launch config sets
 
 ```
 app/
-  start/            onboarding
-  upload/           PDF parse + manual fallback
-  dashboard/        baseline + forecast preview + nudge card
-  forecast/[marker] decay chart for D / B12
-  nudges/[id]/preview rendered email
-  api/parse         OpenRouter PDF parsing
-  api/generate-nudge OpenRouter copy generation
+  start/              onboarding
+  upload/             PDF parse + manual fallback
+  dashboard/          baseline + forecast preview + nudge card
+  forecast/[marker]   decay chart for D / B12
+  nudges/             cadence overview — every queued nudge + send buttons
+  nudges/[id]/preview rendered email + "send to my inbox" trigger
+  tests/              home-based blood-test marketplace
+  api/parse           OpenRouter PDF parsing
+  api/generate-nudge  OpenRouter copy generation
+  api/send-nudge      Resend transactional send
+  api/recommend-explain  per-panel rationale copy
 components/
-  ui.tsx            design system primitives
-  ForecastChart.tsx data-driven decay chart
-  PcosLens.tsx      §7-safe PCOS lifestyle lens
+  ui.tsx              design system primitives
+  ForecastChart.tsx   data-driven decay chart
+  PcosLens.tsx        §7-safe PCOS lifestyle lens
 lib/
-  markers.ts        marker reference (thresholds, decay rates, lab aliases)
-  forecast.ts       decay heuristic — projectMarker / findCrossing / nudgeDate
-  status.ts         in / watch / low computation
-  prompts.ts        Claude system prompts + safety gate
-  openrouter.ts     fetch-based client (PDF + prompt caching)
-  store.ts          Zustand store (persisted to localStorage)
-  copy.ts           static §7-pre-approved copy
-  nudge.ts          nudge input builder + static fallback payload
-  demo.ts           deterministic demo seed (Shivam's PharmEasy report)
-  tokens.ts         design tokens
+  markers.ts          marker reference (thresholds, decay rates, lab aliases)
+  forecast.ts         decay heuristic — projectMarker / findCrossing / nudgeDate
+  status.ts           in / watch / low computation
+  prompts.ts          Claude system prompts + safety gate
+  openrouter.ts       fetch-based client (PDF + prompt caching)
+  email.ts            Resend fetch wrapper
+  email-template.ts   inline-CSS HTML renderer for the nudge email
+  store.ts            Zustand store (persisted to localStorage)
+  copy.ts             static §7-pre-approved copy
+  nudge.ts            nudge input builder + static fallback payload
+  recommend.ts        panel-recommendation scoring
+  demo.ts             deterministic demo seed (Shivam's PharmEasy report)
+  tokens.ts           design tokens
 ```
 
 ## Env vars
@@ -83,6 +91,19 @@ lib/
 | `OPENROUTER_MODEL_PARSE` | no | falls back to `OPENROUTER_MODEL` |
 | `OPENROUTER_MODEL_COPY` | no | falls back to `OPENROUTER_MODEL` |
 | `OPENROUTER_BASE_URL` | no | `https://openrouter.ai/api/v1` |
+| `RESEND_API_KEY` | for real email sends | — (preview UI shows a hint if missing) |
+| `RESEND_FROM_ADDRESS` | no | `Baseline <onboarding@resend.dev>` (Resend's shared sender) |
+
+## Nudge cadence — how the email actually fires
+
+The mechanic isn't "buy a test, get a result" — it's the loop that follows. For every Vitamin D / B12 reading, the forecast in `lib/forecast.ts` projects monthly values forward 6 months. The nudge fires **~3 weeks before the projected crossing** (or 4 months out if it never crosses in-window — the periodic check-in case). Already-below readings get a next-morning nudge.
+
+In production, a daily cron (Vercel Cron or a GitHub Action) hits an internal route at ~09:00 IST, finds every user whose `forecast.nudgeDate === today`, and POSTs each to `/api/send-nudge`. That route uses the cached LLM copy from `/api/generate-nudge` (or `staticNudge` as a §7-safe fallback), renders the HTML via `lib/email-template.ts`, and ships it through **Resend**.
+
+For the demo:
+- `/nudges` is the cadence overview — one row per forecastable marker with a reading, showing the schedule and a manual "Send to me" button.
+- Inside `/nudges/[id]/preview`, the same manual trigger sits below the email card.
+- Drop a `RESEND_API_KEY` in `.env.local` (or the Vercel project's env) to switch real sends on. Without one, the button still works but returns 503 + a friendly hint — the rest of the loop still renders deterministically.
 
 ## Nightly price refresh
 

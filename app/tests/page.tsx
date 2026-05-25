@@ -465,9 +465,11 @@ function TestsPageInner() {
             lineHeight: 1.5,
           }}
         >
-          Prices and panels are aggregated from public lab pages and refreshed
-          nightly. Always verify on the lab&apos;s site before booking — we link
-          straight out, never undercut.
+          Each panel links straight to the lab&apos;s main diagnostics page —
+          search the test name there to book (lab-specific URLs change often,
+          so we point at the front door). Prices are aggregated from public lab
+          pages and refreshed nightly by the scraper in <code>scripts/</code>;
+          always confirm the live price on the lab&apos;s site before booking.
         </p>
       </div>
     </main>

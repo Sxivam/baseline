@@ -15,6 +15,10 @@ import { DISCLAIMER_FULL } from "@/lib/copy";
 import { formatDate } from "@/lib/format";
 import { Disclaimer, Icon, Monogram, Wordmark } from "@/components/ui";
 import type { NudgePayload } from "@/lib/types";
+import type { NudgeProjection } from "@/lib/email-template";
+
+type SendState = "idle" | "sending" | "sent" | "configRequired" | "error";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Row {
   label: string;
@@ -37,6 +41,12 @@ export default function NudgePreviewPage() {
   const [payload, setPayload] = useState<NudgePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const started = useRef(false);
+
+  // "Send to my inbox" state — independent from the copy-generation flow.
+  const [email, setEmail] = useState("");
+  const [sendState, setSendState] = useState<SendState>("idle");
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sentId, setSentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hydrated || started.current) return;
@@ -115,6 +125,64 @@ export default function NudgePreviewPage() {
       red: true,
     },
   ];
+
+  // Same shape the email-template renderer wants — see lib/email-template.ts.
+  const projection: NudgeProjection = {
+    markerFullName: def.fullName,
+    unit: def.unit,
+    threshold: m.threshold,
+    lastDate: formatDate(testDate),
+    lastValue: m.last_value,
+    todayLabel: "Today",
+    todayValue: m.current_estimate,
+    todayDelta:
+      delta === 0 ? "" : `${delta > 0 ? "+" : "−"}${Math.abs(delta)} since`,
+    projectedLabel:
+      m.projected_date.charAt(0).toUpperCase() + m.projected_date.slice(1),
+    projectedValue: m.projected_value,
+    projectedDelta: forecast.crossingDate ? "crosses the line" : "in the window",
+  };
+
+  const emailValid = EMAIL_RE.test(email.trim());
+  const sendDisabled = !payload || !emailValid || sendState === "sending";
+
+  async function handleSend() {
+    if (sendDisabled || !payload || !profile) return;
+    setSendState("sending");
+    setSendError(null);
+    setSentId(null);
+    try {
+      const res = await fetch("/api/send-nudge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          payload,
+          projection,
+          firstName: profile.firstName,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        id?: string;
+        error?: string;
+        configRequired?: boolean;
+      };
+      if (res.ok && data.ok) {
+        setSendState("sent");
+        setSentId(data.id ?? null);
+      } else if (res.status === 503 && data.configRequired) {
+        setSendState("configRequired");
+        setSendError(data.error ?? null);
+      } else {
+        setSendState("error");
+        setSendError(data.error ?? `Send failed (status ${res.status}).`);
+      }
+    } catch (err) {
+      setSendState("error");
+      setSendError(err instanceof Error ? err.message : "Network error");
+    }
+  }
 
   return (
     <main style={{ minHeight: "100vh", background: tok.paper }}>
@@ -572,11 +640,264 @@ export default function NudgePreviewPage() {
       </div>
 
       {payload && (
-        <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px 40px" }}>
+        <div
+          style={{
+            maxWidth: 600,
+            margin: "0 auto",
+            padding: "0 16px 40px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+          }}
+        >
+          <SendToInboxCard
+            email={email}
+            onEmailChange={setEmail}
+            onSend={handleSend}
+            disabled={sendDisabled}
+            emailValid={emailValid}
+            state={sendState}
+            error={sendError}
+            sentId={sentId}
+            firstName={profile.firstName}
+          />
           <Disclaimer compact style={{ justifyContent: "center" }} />
         </div>
       )}
     </main>
+  );
+}
+
+interface SendCardProps {
+  email: string;
+  onEmailChange: (v: string) => void;
+  onSend: () => void;
+  disabled: boolean;
+  emailValid: boolean;
+  state: SendState;
+  error: string | null;
+  sentId: string | null;
+  firstName: string;
+}
+
+function SendToInboxCard({
+  email,
+  onEmailChange,
+  onSend,
+  disabled,
+  emailValid,
+  state,
+  error,
+  sentId,
+  firstName,
+}: SendCardProps) {
+  const status = (() => {
+    if (state === "sending")
+      return { tone: "info", text: `Sending to ${email}…` };
+    if (state === "sent")
+      return {
+        tone: "ok",
+        text: `Sent. Check your inbox (and Promotions, just in case).${
+          sentId ? ` Resend id: ${sentId}` : ""
+        }`,
+      };
+    if (state === "configRequired")
+      return {
+        tone: "warn",
+        text:
+          error ||
+          "Add RESEND_API_KEY to .env.local (or Vercel env) to enable real sends.",
+      };
+    if (state === "error")
+      return { tone: "warn", text: error || "Send failed — try again." };
+    return null;
+  })();
+
+  return (
+    <div
+      style={{
+        background: tok.white,
+        borderRadius: 24,
+        border: `1px solid ${tok.sageSoft}`,
+        boxShadow: tok.shadowSm,
+        padding: 22,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 99,
+            background: tok.paper,
+            border: `1px solid ${tok.sageSoft}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="bell" size={15} stroke={tok.ink} strokeWidth={2} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 15,
+              fontWeight: 900,
+              color: tok.ink,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Send this to my inbox
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 500,
+              color: tok.mute,
+              marginTop: 2,
+            }}
+          >
+            Same template, real email — useful to feel the cadence.
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          style={{
+            flex: "1 1 220px",
+            minWidth: 200,
+            display: "flex",
+            alignItems: "center",
+            padding: "12px 16px",
+            borderRadius: 999,
+            background: tok.paper,
+            border: `1px solid ${
+              email && !emailValid ? tok.red : tok.sageSoft
+            }`,
+          }}
+        >
+          <input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
+            placeholder={`${firstName.toLowerCase()}@example.com`}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              fontFamily: tok.font,
+              fontSize: 15,
+              fontWeight: 700,
+              color: tok.ink,
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={disabled}
+          style={{
+            padding: "12px 22px",
+            borderRadius: 999,
+            border: "none",
+            background: disabled ? tok.sageSoft : tok.red,
+            color: disabled ? tok.mute : tok.white,
+            fontFamily: tok.font,
+            fontWeight: 800,
+            fontSize: 14,
+            cursor: disabled ? "default" : "pointer",
+            boxShadow: disabled ? "none" : tok.shadowRed,
+            transition: "background .15s, opacity .15s",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {state === "sending" ? (
+            <span
+              aria-hidden
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: 99,
+                border: `2px solid rgba(255,255,255,.4)`,
+                borderTopColor: tok.white,
+                animation: "bl-spin 0.8s linear infinite",
+              }}
+            />
+          ) : state === "sent" ? (
+            <Icon name="check" size={14} stroke={tok.white} strokeWidth={2.4} />
+          ) : null}
+          {state === "sent" ? "Sent" : "Send to me →"}
+        </button>
+      </div>
+
+      {status && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 14px",
+            borderRadius: 14,
+            background:
+              status.tone === "ok"
+                ? tok.sageMid
+                : status.tone === "warn"
+                  ? tok.amberSoft
+                  : tok.paper,
+            border: `1px solid ${
+              status.tone === "warn" ? tok.amber : tok.sageSoft
+            }`,
+            fontFamily: tok.font,
+            fontSize: 12,
+            fontWeight: 600,
+            color: status.tone === "warn" ? tok.amber : tok.ink2,
+            lineHeight: 1.45,
+          }}
+        >
+          {status.text}
+        </div>
+      )}
+
+      <div
+        style={{
+          marginTop: 12,
+          paddingTop: 10,
+          borderTop: `1px dashed ${tok.sage}80`,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <Icon name="info" size={12} stroke={tok.mute} strokeWidth={2} />
+        <span
+          style={{
+            fontFamily: tok.font,
+            fontSize: 11,
+            fontWeight: 600,
+            color: tok.mute,
+            lineHeight: 1.4,
+          }}
+        >
+          In production this fires automatically on the scheduled date. From the
+          preview, you trigger it manually — useful for the demo.
+        </span>
+      </div>
+    </div>
   );
 }
 
