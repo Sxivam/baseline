@@ -521,11 +521,13 @@ export default function DashboardPage() {
                         color: "rgba(255,255,255,.6)",
                       }}
                     >
-                      NUDGE QUEUED
+                      WE&apos;LL CHECK IN
                     </span>
                   </div>
                   <div style={{ fontFamily: tok.font, fontSize: 20, fontWeight: 900, marginTop: 10 }}>
-                    {heroForecast.nudgeDate ? formatDate(heroForecast.nudgeDate) : "Scheduled"}
+                    {heroForecast.nudgeDate
+                      ? `around ${softDate(heroForecast.nudgeDate)}`
+                      : "soon"}
                   </div>
                   <div
                     style={{
@@ -537,44 +539,7 @@ export default function DashboardPage() {
                       lineHeight: 1.45,
                     }}
                   >
-                    We&apos;ll remind you to get ahead of it — act, then re-test.
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-                    <button
-                      type="button"
-                      onClick={() => router.push(`/nudges/${hero.markerId}/preview`)}
-                      style={{
-                        padding: "9px 16px",
-                        borderRadius: 99,
-                        border: "1px solid rgba(255,255,255,.2)",
-                        background: "transparent",
-                        color: tok.white,
-                        fontFamily: tok.font,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Preview email →
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => router.push("/nudges")}
-                      style={{
-                        padding: "9px 16px",
-                        borderRadius: 99,
-                        border: "none",
-                        background: tok.red,
-                        color: tok.white,
-                        fontFamily: tok.font,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        boxShadow: tok.shadowRed,
-                      }}
-                    >
-                      See cadence
-                    </button>
+                    A gentle nudge to re-test before this starts to drift.
                   </div>
                 </div>
               </div>

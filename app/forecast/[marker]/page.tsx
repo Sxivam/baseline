@@ -331,19 +331,21 @@ export default function ForecastPage() {
                       color: "rgba(255,255,255,.6)",
                     }}
                   >
-                    NEXT NUDGE
+                    WE&apos;LL CHECK IN
                   </span>
                 </div>
                 <div style={{ marginTop: 14, display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                   <div style={{ fontFamily: tok.font, fontSize: 30, fontWeight: 900, letterSpacing: "-0.02em" }}>
-                    {forecast.nudgeDate ? formatDate(forecast.nudgeDate) : "Scheduled"}
+                    {forecast.nudgeDate
+                      ? `around ${softDate(forecast.nudgeDate)}`
+                      : "soon"}
                   </div>
                   <span style={{ fontFamily: tok.font, fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.5)" }}>
                     {forecast.alreadyBelow
-                      ? "now — you're already under"
+                      ? "a gentle check-in"
                       : forecast.neverCrosses
                         ? "a routine check-in"
-                        : "~3 wk before crossing"}
+                        : "ahead of the drift"}
                   </span>
                 </div>
                 <p
@@ -358,32 +360,6 @@ export default function ForecastPage() {
                 >
                   {nudgeQuote}
                 </p>
-                <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-                  <Button
-                    onClick={() => router.push(`/nudges/${markerId}/preview`)}
-                    style={{ flex: 1, padding: "12px 14px", fontSize: 13 }}
-                  >
-                    Preview email
-                    <Icon name="arrow" size={14} stroke={tok.white} strokeWidth={2.4} />
-                  </Button>
-                  <button
-                    type="button"
-                    style={{
-                      flex: "0 0 auto",
-                      padding: "12px 16px",
-                      borderRadius: 99,
-                      border: "1px solid rgba(255,255,255,.2)",
-                      background: "transparent",
-                      color: tok.white,
-                      fontFamily: tok.font,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Reschedule
-                  </button>
-                </div>
               </div>
             </div>
 
