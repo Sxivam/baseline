@@ -2,7 +2,7 @@
 
 > Tracking, not diagnosis.
 
-Baseline turns a one-time blood test into an ongoing, nudged habit. Upload a blood report → Claude parses your markers → see your baseline → for Vitamin D and B12, a decay forecast projects when each crosses its threshold → an email nudge fires ~3 weeks before. The test is the cold start; the loop is the product.
+Baseline turns a one-time blood test into an ongoing, nudged habit. Upload a blood report → an LLM (via OpenRouter) parses your markers → see your baseline → for Vitamin D and B12, a decay forecast projects when each crosses its threshold → an email nudge fires ~3 weeks before. The test is the cold start; the loop is the product.
 
 Built for the Sprinto Growth Associate take-home, May 2026.
 
@@ -11,7 +11,7 @@ Built for the Sprinto Growth Associate take-home, May 2026.
 | Route | What it does |
 |---|---|
 | `/start` | Onboarding — name, age, sex, diet, sun, city (+ an optional PCOS lifestyle pathway for female users) |
-| `/upload` | PDF dropzone → `/api/parse` (Claude). Manual entry is always one click away |
+| `/upload` | PDF dropzone → `/api/parse` (LLM via OpenRouter). Manual entry is always one click away |
 | `/dashboard` | Per-marker status (in / watch / low). Hero card + forecast preview + queued nudge |
 | `/forecast/[marker]` | Decay forecast for D & B12 — observed curve, projected crossing, factor explainer |
 | `/nudges` | Cadence overview — every queued nudge with date, status, and a manual "send to my inbox" trigger |
@@ -22,9 +22,9 @@ Built for the Sprinto Growth Associate take-home, May 2026.
 
 Baseline is an **awareness and tracking tool, not a medical service**. All generated copy is gated by:
 
-1. A non-negotiables block in the Claude system prompts (no dosing, no diagnosis, no urgency words).
+1. A non-negotiables block in the LLM system prompts (no dosing, no diagnosis, no urgency words).
 2. A server-side regex check on every response.
-3. A §7-safe static fallback (in `lib/copy.ts`, `lib/nudge.ts`) used if the Claude output ever misses.
+3. A §7-safe static fallback (in `lib/copy.ts`, `lib/nudge.ts`) used if the LLM output ever misses.
 4. A persistent disclaimer on every screen.
 
 The PCOS pathway (female users) is **lifestyle tracking + awareness only** — never a screen or diagnosis.
@@ -45,7 +45,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The app runs at `http://localhost:3000` (or whatever port the launch config sets). Without a key it runs on deterministic fallbacks, so the loop is still demoable end-to-end — drop a key in to switch on live PDF parsing + Claude-written nudge copy.
+The app runs at `http://localhost:3000` (or whatever port the launch config sets). Without a key it runs on deterministic fallbacks, so the loop is still demoable end-to-end — drop a key in to switch on live PDF parsing + LLM-written nudge copy.
 
 ## Project layout
 
@@ -70,7 +70,7 @@ lib/
   markers.ts          marker reference (thresholds, decay rates, lab aliases)
   forecast.ts         decay heuristic — projectMarker / findCrossing / nudgeDate
   status.ts           in / watch / low computation
-  prompts.ts          Claude system prompts + safety gate
+  prompts.ts          LLM system prompts + safety gate
   openrouter.ts       fetch-based client (PDF + prompt caching)
   email.ts            Resend fetch wrapper
   email-template.ts   inline-CSS HTML renderer for the nudge email
@@ -86,7 +86,7 @@ lib/
 
 | Name | Required | Default |
 |---|---|---|
-| `OPENROUTER_API_KEY` | for live Claude calls | — (fallbacks otherwise) |
+| `OPENROUTER_API_KEY` | for live LLM calls | — (fallbacks otherwise) |
 | `OPENROUTER_MODEL` | no | `anthropic/claude-sonnet-4.5` |
 | `OPENROUTER_MODEL_PARSE` | no | falls back to `OPENROUTER_MODEL` |
 | `OPENROUTER_MODEL_COPY` | no | falls back to `OPENROUTER_MODEL` |

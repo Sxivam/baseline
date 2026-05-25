@@ -1,7 +1,7 @@
 "use client";
 
 // Nudge email preview — renders the transactional email populated from
-// /api/generate-nudge (Claude copy, §7-gated) over the locally-computed
+// /api/generate-nudge (LLM copy, §7-gated) over the locally-computed
 // projection. This is the loop closing.
 
 import { useEffect, useRef, useState } from "react";

@@ -58,7 +58,7 @@ export interface CycleLog {
   regularity: "regular" | "irregular" | "not-sure" | null;
 }
 
-/** Claude-generated nudge email payload (see prompts.md copy-gen schema). */
+/** LLM-generated nudge email payload (see prompts.md copy-gen schema). */
 export interface NudgePayload {
   subject: string;
   hero_line: string; // two lines joined with "\n"

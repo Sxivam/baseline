@@ -1,5 +1,5 @@
 // POST /api/generate-nudge — generate the personalised nudge email payload.
-// Claude via OpenRouter when a key is set; §7-safe static fallback otherwise.
+// LLM via OpenRouter when a key is set; §7-safe static fallback otherwise.
 // Generated copy is gated by passesSafety; one regenerate, then fallback.
 
 import { COPY_FEWSHOT, COPY_SYSTEM, passesSafety } from "@/lib/prompts";

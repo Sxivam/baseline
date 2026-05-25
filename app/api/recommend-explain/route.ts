@@ -1,6 +1,6 @@
 // POST /api/recommend-explain — write personalised "why this for you"
 // rationales for the top recommended panels, plus an optional bundle-savings
-// hint. Claude via OpenRouter when a key is set; §7-safe static fallback
+// hint. LLM via OpenRouter when a key is set; §7-safe static fallback
 // otherwise. One regenerate at temperature 0 if the §7 gate fails, then fall
 // back to deterministic copy.
 

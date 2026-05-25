@@ -1,6 +1,6 @@
 // POST /api/parse — extract markers from an uploaded blood report PDF.
-// Uses OpenRouter (Claude) when a key is set; falls back to the deterministic
-// demo result otherwise so the loop always works.
+// Uses OpenRouter (default: free Gemini model) when a key is set; falls back
+// to the deterministic demo result otherwise so the loop always works.
 
 import { PARSE_SYSTEM, parseOutputIsClean } from "@/lib/prompts";
 import { chatComplete, extractJson, hasOpenRouterKey, modelFor } from "@/lib/openrouter";

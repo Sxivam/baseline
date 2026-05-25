@@ -1,4 +1,4 @@
-// Claude system prompts — ported from handoff/prompts.md. The §7 medical-advice
+// LLM system prompts — ported from handoff/prompts.md. The §7 medical-advice
 // constraint is baked in. Do not strip it.
 
 import { MARKERS } from "./markers";
