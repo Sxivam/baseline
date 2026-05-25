@@ -6,7 +6,7 @@ const BASE_URL =
   process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
 
 const DEFAULT_MODEL =
-  process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp:free";
+  process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free";
 
 export function hasOpenRouterKey(): boolean {
   return Boolean(process.env.OPENROUTER_API_KEY);
