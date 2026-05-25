@@ -268,7 +268,7 @@ export default function UploadPage() {
                 >
                   <Icon name="spark" size={12} stroke={tok.white} strokeWidth={2.5} />
                   <span style={{ fontFamily: tok.font, fontSize: 11, fontWeight: 800, letterSpacing: "0.05em" }}>
-                    CLAUDE PARSES IT
+                    PARSED IN SECONDS
                   </span>
                 </div>
               </div>
