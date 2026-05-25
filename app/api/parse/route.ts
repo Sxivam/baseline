@@ -116,7 +116,11 @@ export async function POST(request: Request) {
       source: "openrouter",
     });
   } catch (err) {
-    console.error("[api/parse]", err);
-    return Response.json({ error: "parse_failed" }, { status: 500 });
+    const detail = err instanceof Error ? err.message : String(err);
+    console.error("[api/parse]", detail);
+    return Response.json(
+      { error: "parse_failed", detail: detail.slice(0, 500) },
+      { status: 500 },
+    );
   }
 }

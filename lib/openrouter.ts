@@ -63,7 +63,11 @@ export async function chatComplete(opts: ChatOptions): Promise<string> {
     stream: false,
   };
   if (opts.pdf) {
-    body.plugins = [{ id: "file-parser", pdf: { engine: "native" } }];
+    // "pdf-text" engine: free for all models, server-side text extraction.
+    // "native" only works for models with native PDF vision (Claude, GPT-4o).
+    // Override via OPENROUTER_PDF_ENGINE if needed.
+    const engine = process.env.OPENROUTER_PDF_ENGINE || "pdf-text";
+    body.plugins = [{ id: "file-parser", pdf: { engine } }];
   }
 
   const res = await fetch(`${BASE_URL}/chat/completions`, {
