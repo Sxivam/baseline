@@ -4,7 +4,9 @@
     "lab": "PharmEasy",
     "name": "Vitamin D Total (25-OH)",
     "price": 299,
-    "markers": ["vitamin_d"],
+    "markers": [
+      "vitamin_d"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
@@ -15,7 +17,9 @@
     "lab": "Tata 1mg",
     "name": "Vitamin D (25-OH)",
     "price": 399,
-    "markers": ["vitamin_d"],
+    "markers": [
+      "vitamin_d"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://www.1mg.com/labs",
@@ -26,7 +30,9 @@
     "lab": "Thyrocare",
     "name": "Vitamin D Total",
     "price": 400,
-    "markers": ["vitamin_d"],
+    "markers": [
+      "vitamin_d"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://www.thyrocare.com/online-test-booking",
@@ -37,7 +43,9 @@
     "lab": "Redcliffe Labs",
     "name": "Vitamin D (25-OH) Test",
     "price": 349,
-    "markers": ["vitamin_d"],
+    "markers": [
+      "vitamin_d"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://redcliffelabs.com/",
@@ -47,19 +55,23 @@
     "id": "pe-b12",
     "lab": "PharmEasy",
     "name": "Vitamin B12 Test",
-    "price": 399,
-    "markers": ["vitamin_b12"],
+    "price": 999,
+    "markers": [
+      "vitamin_b12"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-05-26"
   },
   {
     "id": "1mg-b12",
     "lab": "Tata 1mg",
     "name": "Vitamin B12",
     "price": 349,
-    "markers": ["vitamin_b12"],
+    "markers": [
+      "vitamin_b12"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://www.1mg.com/labs",
@@ -69,30 +81,38 @@
     "id": "pe-d-b12",
     "lab": "PharmEasy",
     "name": "Vitamin D + B12 Combo",
-    "price": 599,
-    "markers": ["vitamin_d", "vitamin_b12"],
+    "price": 999,
+    "markers": [
+      "vitamin_d",
+      "vitamin_b12"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-05-26"
   },
   {
     "id": "pe-lipid",
     "lab": "PharmEasy",
     "name": "Lipid Profile",
-    "price": 349,
-    "markers": ["ldl", "hdl"],
+    "price": 999,
+    "markers": [
+      "ldl",
+      "hdl"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-05-26"
   },
   {
     "id": "1mg-hba1c",
     "lab": "Tata 1mg",
     "name": "HbA1c (Glycated Hemoglobin)",
     "price": 399,
-    "markers": ["hba1c"],
+    "markers": [
+      "hba1c"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://www.1mg.com/labs",
@@ -103,7 +123,9 @@
     "lab": "Tata 1mg",
     "name": "TSH (Ultrasensitive)",
     "price": 299,
-    "markers": ["tsh"],
+    "markers": [
+      "tsh"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://www.1mg.com/labs",
@@ -113,19 +135,28 @@
     "id": "pe-iron-studies",
     "lab": "PharmEasy",
     "name": "Iron Studies (incl. Ferritin)",
-    "price": 599,
-    "markers": ["ferritin"],
+    "price": 999,
+    "markers": [
+      "ferritin"
+    ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-05-26"
   },
   {
     "id": "thyro-aarogyam-b",
     "lab": "Thyrocare",
     "name": "Aarogyam Basic",
     "price": 599,
-    "markers": ["vitamin_d", "vitamin_b12", "ldl", "hdl", "hba1c", "tsh"],
+    "markers": [
+      "vitamin_d",
+      "vitamin_b12",
+      "ldl",
+      "hdl",
+      "hba1c",
+      "tsh"
+    ],
     "sampleType": "home",
     "tat": "48h",
     "url": "https://www.thyrocare.com/online-test-booking",
@@ -136,7 +167,16 @@
     "lab": "Redcliffe Labs",
     "name": "Full Body Checkup (65 tests)",
     "price": 999,
-    "markers": ["vitamin_d", "vitamin_b12", "ldl", "hdl", "hba1c", "tsh", "ferritin", "fasting_glucose"],
+    "markers": [
+      "vitamin_d",
+      "vitamin_b12",
+      "ldl",
+      "hdl",
+      "hba1c",
+      "tsh",
+      "ferritin",
+      "fasting_glucose"
+    ],
     "sampleType": "home",
     "tat": "48h",
     "url": "https://redcliffelabs.com/",
@@ -147,7 +187,16 @@
     "lab": "Tata 1mg",
     "name": "Full Body Checkup",
     "price": 1199,
-    "markers": ["vitamin_d", "vitamin_b12", "ldl", "hdl", "hba1c", "tsh", "ferritin", "fasting_glucose"],
+    "markers": [
+      "vitamin_d",
+      "vitamin_b12",
+      "ldl",
+      "hdl",
+      "hba1c",
+      "tsh",
+      "ferritin",
+      "fasting_glucose"
+    ],
     "sampleType": "home",
     "tat": "48h",
     "url": "https://www.1mg.com/labs",
