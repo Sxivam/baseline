@@ -127,8 +127,6 @@ function StartPageInner() {
   const [diet, setDiet] = useState<Diet>("non-veg");
   const [sun, setSun] = useState<Sun>("indoor");
   const [city, setCity] = useState("Hyderabad");
-  const [pcos, setPcos] = useState(false);
-  const [trt, setTrt] = useState(false);
 
   function submit() {
     const profile: Profile = {
@@ -138,8 +136,8 @@ function StartPageInner() {
       diet,
       sun,
       city: city.trim() || "—",
-      pcosTracking: sex === "female" && pcos,
-      trtTracking: sex === "male" && trt,
+      pcosTracking: false,
+      trtTracking: false,
     };
     setProfile(profile);
     // Branch on the landing intent. Users without a report start at the
@@ -364,22 +362,8 @@ function StartPageInner() {
                 />
               </Field>
 
-              {sex === "female" && (
-                <OptIn
-                  checked={pcos}
-                  onToggle={() => setPcos((p) => !p)}
-                  label="PCOS lifestyle tracking"
-                  description="Track cycle regularity and the metabolic markers alongside your baseline. Lifestyle awareness — not a PCOS screen or diagnosis."
-                />
-              )}
-              {sex === "male" && (
-                <OptIn
-                  checked={trt}
-                  onToggle={() => setTrt((p) => !p)}
-                  label="HRT / TRT cycle tracking"
-                  description="On a prescribed protocol? Log injections, post-shot stages, and watch the lipid + glucose markers move alongside. Tracking only — Baseline never prescribes."
-                />
-              )}
+              {/* PCOS + TRT lenses paused for v1 — focusing on one problem
+                  done well. Toggles preserved in git history. */}
             </div>
 
             <Button

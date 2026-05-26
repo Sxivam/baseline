@@ -509,19 +509,63 @@ export default function PlanPage() {
               </div>
             </section>
 
-            {source === "llm" && (
-              <div
+            <div
+              style={{
+                background: tok.white,
+                border: `1px solid ${tok.sageSoft}`,
+                borderRadius: 20,
+                padding: "14px 18px",
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+              }}
+            >
+              <span
                 style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 10,
+                  background: tok.ink,
+                  color: tok.white,
                   fontFamily: tok.font,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: tok.mute,
-                  textAlign: "center",
+                  fontSize: 14,
+                  fontWeight: 900,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: "0 0 auto",
                 }}
               >
-                Plan curated by an LLM via OpenRouter — §7-gated, behavioural only.
+                AI
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: tok.ink,
+                    letterSpacing: "-0.005em",
+                  }}
+                >
+                  How this plan was made
+                </div>
+                <div
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: tok.ink2,
+                    marginTop: 4,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {source === "llm"
+                    ? "Claude (via OpenRouter) read your markers + intake answers and composed the weekly themes. Output gated by a §7 safety check — no doses, no diagnoses. Same model that parsed your report."
+                    : "Composed by a deterministic rule engine using your markers + intake answers. Same shape as the LLM version; preserved as a fallback when the model is rate-limited or returns unsafe copy."}
+                </div>
               </div>
-            )}
+            </div>
 
             <Disclaimer />
           </>

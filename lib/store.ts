@@ -7,9 +7,12 @@ import { persist } from "zustand/middleware";
 import type {
   CycleLog,
   IntakeAnswers,
+  MoveProgress,
+  MoveStatus,
   NudgePayload,
   ParseResult,
   Plan,
+  PlanProgress,
   Profile,
   TrtLog,
   TrtStageEntry,
@@ -23,6 +26,7 @@ interface BaselineState {
   nudges: Record<string, NudgePayload>; // keyed by markerId
   intake: IntakeAnswers | null;
   plan: Plan | null;
+  progress: PlanProgress;
   accountabilityEmail: string | null;
 
   setProfile: (p: Profile) => void;
@@ -35,6 +39,8 @@ interface BaselineState {
   setPlan: (p: Plan | null) => void;
   setAccountabilityEmail: (e: string) => void;
   acceptPlan: () => void;
+  setMoveStatus: (key: string, status: MoveStatus, feedback?: MoveProgress["feedback"]) => void;
+  setWeekReflection: (week: number, reflection: string) => void;
   reset: () => void;
 }
 
@@ -48,6 +54,7 @@ export const useBaseline = create<BaselineState>()(
       nudges: {},
       intake: null,
       plan: null,
+      progress: { moves: {}, weeks: {} },
       accountabilityEmail: null,
 
       setProfile: (profile) => set({ profile }),
@@ -77,6 +84,30 @@ export const useBaseline = create<BaselineState>()(
             ? { ...s.plan, startedAt: new Date().toISOString() }
             : s.plan,
         })),
+      setMoveStatus: (key, status, feedback) =>
+        set((s) => ({
+          progress: {
+            ...s.progress,
+            moves: {
+              ...s.progress.moves,
+              [key]: {
+                status,
+                updatedAt: new Date().toISOString(),
+                ...(feedback ? { feedback } : {}),
+              },
+            },
+          },
+        })),
+      setWeekReflection: (week, reflection) =>
+        set((s) => ({
+          progress: {
+            ...s.progress,
+            weeks: {
+              ...s.progress.weeks,
+              [week]: { reflection, loggedAt: new Date().toISOString() },
+            },
+          },
+        })),
       reset: () =>
         set({
           profile: null,
@@ -86,6 +117,7 @@ export const useBaseline = create<BaselineState>()(
           nudges: {},
           intake: null,
           plan: null,
+          progress: { moves: {}, weeks: {} },
           accountabilityEmail: null,
         }),
     }),

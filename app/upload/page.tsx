@@ -563,12 +563,23 @@ function ParsingState() {
           animation: "bl-spin 0.8s linear infinite",
         }}
       />
-      <div style={{ textAlign: "center" }}>
+      <div style={{ textAlign: "center", maxWidth: 360 }}>
         <div style={{ fontFamily: tok.font, fontSize: 15, fontWeight: 800 }}>
           Reading your report…
         </div>
-        <div style={{ fontFamily: tok.font, fontSize: 12, fontWeight: 500, color: tok.mute, marginTop: 4 }}>
-          Pulling out your markers
+        <div
+          style={{
+            fontFamily: tok.font,
+            fontSize: 12,
+            fontWeight: 500,
+            color: tok.mute,
+            marginTop: 4,
+            lineHeight: 1.5,
+          }}
+        >
+          Claude (via OpenRouter) reads the PDF, matches every marker against its
+          canonical reference range, and returns structured JSON. Typical time:
+          5-12 seconds.
         </div>
       </div>
       <div

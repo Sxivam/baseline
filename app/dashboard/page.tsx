@@ -24,8 +24,8 @@ import {
   Wordmark,
 } from "@/components/ui";
 import { ForecastChart } from "@/components/ForecastChart";
-import { PcosLens } from "@/components/PcosLens";
-import { TrtLens } from "@/components/TrtLens";
+// PCOS + TRT lenses are paused for v1 — were diluting the "one painful problem
+// done well" focus. Code is preserved in components/ if we want them later.
 import type { Forecast, MarkerReading, Plan, Profile } from "@/lib/types";
 
 function heroStatusText(m: MarkerReading, sex: Profile["sex"]): string {
@@ -657,17 +657,6 @@ export default function DashboardPage() {
           </>
         )}
 
-        {profile.pcosTracking && (
-          <div style={{ marginTop: 18 }}>
-            <PcosLens markers={markers} />
-          </div>
-        )}
-
-        {profile.trtTracking && (
-          <div style={{ marginTop: 18 }}>
-            <TrtLens markers={markers} />
-          </div>
-        )}
 
         <Disclaimer style={{ marginTop: 20, maxWidth: 560 }} />
       </div>
@@ -891,23 +880,44 @@ function PlanTile({
     );
   }
 
-  // Active plan — show week + focus + accountability email.
+  // Active plan — show week + focus + check-off-able moves.
+  return <ActivePlanTile plan={plan} accountabilityEmail={accountabilityEmail} onOpenPlan={onOpenPlan} onOpenImprove={onOpenImprove} />;
+}
+
+function ActivePlanTile({
+  plan,
+  accountabilityEmail,
+  onOpenPlan,
+  onOpenImprove,
+}: {
+  plan: Plan;
+  accountabilityEmail: string | null;
+  onOpenPlan: () => void;
+  onOpenImprove: () => void;
+}) {
+  const progress = useBaseline((s) => s.progress);
+  const setMoveStatus = useBaseline((s) => s.setMoveStatus);
+
   const week = currentWeekNumber(plan);
   const current = plan.weeks.find((w) => w.week === week) ?? plan.weeks[0];
 
+  // Completion across THIS week only.
+  const total = current.moves.length;
+  const doneCount = current.moves.reduce((n, _, i) => {
+    const key = `${week}.${i}`;
+    return progress.moves[key]?.status === "done" ? n + 1 : n;
+  }, 0);
+  const allDone = total > 0 && doneCount === total;
+
   return (
     <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
-      <button
-        type="button"
-        onClick={onOpenPlan}
+      <div
         className="hi-card"
         style={{
           padding: "22px 22px 20px",
           display: "flex",
           flexDirection: "column",
           gap: 14,
-          textAlign: "left",
-          cursor: "pointer",
           background: tok.ink,
           border: "none",
           color: tok.white,
@@ -984,37 +994,126 @@ function PlanTile({
           </div>
         </div>
 
+        {/* Move checklist — this IS the feedback loop. */}
         <div
           style={{
             position: "relative",
             display: "flex",
+            flexDirection: "column",
             gap: 8,
-            alignItems: "center",
-            flexWrap: "wrap",
           }}
         >
-          {current.moves.slice(0, 2).map((m, i) => (
-            <span
-              key={i}
+          {current.moves.map((m, i) => {
+            const key = `${week}.${i}`;
+            const status = progress.moves[key]?.status ?? "pending";
+            const isDone = status === "done";
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setMoveStatus(key, isDone ? "pending" : "done")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "10px 14px",
+                  borderRadius: 16,
+                  background: isDone
+                    ? "rgba(202,0,19,.18)"
+                    : "rgba(255,255,255,.05)",
+                  border: `1px solid ${isDone ? tok.red : "rgba(255,255,255,.12)"}`,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "background .15s, border-color .15s",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 99,
+                    border: `1.5px solid ${isDone ? tok.red : "rgba(255,255,255,.4)"}`,
+                    background: isDone ? tok.red : "transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: "0 0 auto",
+                    transition: "background .15s, border-color .15s",
+                  }}
+                >
+                  {isDone && (
+                    <Icon name="check" size={13} stroke={tok.white} strokeWidth={3} />
+                  )}
+                </span>
+                <span style={{ fontSize: 18, flex: "0 0 auto" }}>{m.emoji}</span>
+                <span
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    fontFamily: tok.font,
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: tok.white,
+                    textDecoration: isDone ? "line-through" : "none",
+                    textDecorationColor: "rgba(255,255,255,.4)",
+                    letterSpacing: "-0.005em",
+                  }}
+                >
+                  {m.title}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Progress bar */}
+        {total > 0 && (
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 0 0",
+            }}
+          >
+            <div
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
+                flex: 1,
+                height: 6,
                 borderRadius: 99,
-                background: "rgba(255,255,255,.08)",
-                border: "1px solid rgba(255,255,255,.12)",
-                fontFamily: tok.font,
-                fontSize: 12,
-                fontWeight: 700,
-                color: "rgba(255,255,255,.9)",
+                background: "rgba(255,255,255,.12)",
+                overflow: "hidden",
               }}
             >
-              <span>{m.emoji}</span>
-              <span>{m.title}</span>
+              <div
+                style={{
+                  width: `${(doneCount / total) * 100}%`,
+                  height: "100%",
+                  borderRadius: 99,
+                  background: allDone ? "#5f8a7a" : tok.red,
+                  transition: "width .35s ease, background .25s",
+                }}
+              />
+            </div>
+            <span
+              style={{
+                fontFamily: tok.font,
+                fontSize: 11,
+                fontWeight: 800,
+                color: "rgba(255,255,255,.85)",
+                letterSpacing: "0.04em",
+                flex: "0 0 auto",
+              }}
+            >
+              {doneCount}/{total} {allDone ? "· DONE" : "DONE"}
             </span>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* End-of-week reflection prompt — appears only when all done */}
+        {allDone && <WeekReflectionPrompt week={week} />}
 
         <div
           style={{
@@ -1041,19 +1140,25 @@ function PlanTile({
               ? `${plan.nudgeTracks.weeklyCheckin.day} check-ins → ${accountabilityEmail}`
               : `${plan.nudgeTracks.weeklyCheckin.day} check-ins active`}
           </div>
-          <span
+          <button
+            type="button"
+            onClick={onOpenPlan}
             style={{
+              background: "transparent",
+              border: "none",
               fontFamily: tok.font,
               fontSize: 11,
               fontWeight: 800,
               color: tok.white,
               opacity: 0.85,
+              cursor: "pointer",
+              padding: 0,
             }}
           >
             Open plan →
-          </span>
+          </button>
         </div>
-      </button>
+      </div>
 
       <button
         type="button"
@@ -1073,6 +1178,95 @@ function PlanTile({
       >
         See the full move library →
       </button>
+    </div>
+  );
+}
+
+// ─── Weekly reflection prompt ──────────────────────────────────────────────
+
+function WeekReflectionPrompt({ week }: { week: number }) {
+  const progress = useBaseline((s) => s.progress);
+  const setWeekReflection = useBaseline((s) => s.setWeekReflection);
+  const already = progress.weeks[week]?.reflection;
+  const [picked, setPicked] = useState<string | null>(already ?? null);
+
+  const options = [
+    { value: "landed", label: "All landed", emoji: "✅" },
+    { value: "mixed", label: "Mixed bag", emoji: "🤔" },
+    { value: "hard", label: "Hard week", emoji: "🌧" },
+  ];
+
+  if (picked) {
+    return (
+      <div
+        style={{
+          position: "relative",
+          padding: "10px 14px",
+          borderRadius: 14,
+          background: "rgba(95,138,122,.18)",
+          border: "1px solid rgba(95,138,122,.35)",
+          fontFamily: tok.font,
+          fontSize: 12,
+          fontWeight: 700,
+          color: "rgba(255,255,255,.9)",
+        }}
+      >
+        Noted — we&apos;ll tune next week&apos;s check-in around that.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        padding: "12px 14px",
+        borderRadius: 14,
+        background: "rgba(255,255,255,.06)",
+        border: "1px solid rgba(255,255,255,.14)",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: tok.font,
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,.6)",
+        }}
+      >
+        Week {week} · how did it land?
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => {
+              setWeekReflection(week, o.value);
+              setPicked(o.value);
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "8px 14px",
+              borderRadius: 99,
+              border: "1px solid rgba(255,255,255,.18)",
+              background: "transparent",
+              color: tok.white,
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <span>{o.emoji}</span>
+            <span>{o.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -159,3 +159,20 @@ export interface Plan {
   startedAt: string | null; // ISO when accepted
   safety_check: "pass" | "fail";
 }
+
+// In-product feedback loop — keyed by "week-index.move-index" e.g. "1.0".
+export type MoveStatus = "pending" | "doing" | "done" | "skipped";
+
+export interface MoveProgress {
+  status: MoveStatus;
+  updatedAt: string; // ISO
+  /** Optional sentiment after marking done — "landed" / "hard" / "didn't move". */
+  feedback?: "landed" | "hard" | "no-move";
+}
+
+export interface PlanProgress {
+  /** Keyed "1.0" / "1.1" / "2.0" → week.move-index. */
+  moves: Record<string, MoveProgress>;
+  /** Per-week feedback dropped at end-of-week reflection. */
+  weeks: Record<number, { reflection?: string; loggedAt?: string }>;
+}

@@ -282,6 +282,36 @@ export default function ForecastPage() {
                 </div>
               </div>
               <ForecastChart forecast={forecast} threshold={threshold} unit={def.unit} />
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  background: tok.paper,
+                  border: `1px dashed ${tok.sage}80`,
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "flex-start",
+                }}
+              >
+                <Icon name="info" size={13} stroke={tok.ink2} strokeWidth={2} />
+                <span
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 11.5,
+                    fontWeight: 500,
+                    color: tok.ink2,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <b style={{ color: tok.ink, fontWeight: 800 }}>This is a directional estimate, not a clinical projection.</b>{" "}
+                  We extrapolate from one reading using known seasonal patterns
+                  ({def.name === "Vitamin D (25-OH)" ? "low-sun months pull D down ~1-2 ng/mL each" : "B12 trends with diet over months"})
+                  + your profile (diet, sun, sex). The curve shows the slope
+                  we&apos;d expect if nothing changes — the point is to re-test
+                  before it crosses, not to predict it precisely.
+                </span>
+              </div>
             </div>
           </div>
 
