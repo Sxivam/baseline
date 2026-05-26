@@ -577,9 +577,9 @@ function ParsingState() {
             lineHeight: 1.5,
           }}
         >
-          Claude (via OpenRouter) reads the PDF, matches every marker against its
-          canonical reference range, and returns structured JSON. Typical time:
-          5-12 seconds.
+          Parsing with AI — extracts markers from the PDF, matches each against
+          its canonical reference range, and returns structured JSON. Typical
+          time: 5-12 seconds.
         </div>
       </div>
       <div

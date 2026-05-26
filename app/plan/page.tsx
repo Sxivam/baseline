@@ -561,8 +561,8 @@ export default function PlanPage() {
                   }}
                 >
                   {source === "llm"
-                    ? "Claude (via OpenRouter) read your markers + intake answers and composed the weekly themes. Output gated by a §7 safety check — no doses, no diagnoses. Same model that parsed your report."
-                    : "Composed by a deterministic rule engine using your markers + intake answers. Same shape as the LLM version; preserved as a fallback when the model is rate-limited or returns unsafe copy."}
+                    ? "AI read your markers + intake answers and composed the weekly themes. Output gated by a §7 safety check — no doses, no diagnoses. Same engine that parsed your report."
+                    : "Composed by a deterministic rule engine using your markers + intake answers. Same shape as the AI version; preserved as a fallback when the model is rate-limited or returns unsafe copy."}
                 </div>
               </div>
             </div>
