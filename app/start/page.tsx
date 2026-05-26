@@ -1,10 +1,12 @@
 "use client";
 
 // Onboarding — single page, 5 questions (Age, Sex, Diet, Sun, City) plus a
-// name field. Female users see the §7-safe PCOS lifestyle-tracking opt-in.
+// name field. Female users see the §7-safe PCOS lifestyle-tracking opt-in;
+// male users see the TRT cycle-tracking opt-in. Reads ?next= from the
+// landing page to decide where to go next (upload vs. tests marketplace).
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { tok } from "@/lib/tokens";
 import { useBaseline } from "@/lib/store";
 import type { Diet, Profile, Sex, Sun } from "@/lib/types";
@@ -103,8 +105,21 @@ function OptIn({
 }
 
 export default function StartPage() {
+  return (
+    <Suspense fallback={null}>
+      <StartPageInner />
+    </Suspense>
+  );
+}
+
+function StartPageInner() {
   const router = useRouter();
+  const search = useSearchParams();
   const setProfile = useBaseline((s) => s.setProfile);
+
+  // Landing-page intent: ?next=upload (has a report) or ?next=tests (needs one).
+  const next = (search.get("next") || "upload").toLowerCase();
+  const wantsTests = next === "tests";
 
   const [name, setName] = useState("Shivam");
   const [age, setAge] = useState("24");
@@ -127,7 +142,9 @@ export default function StartPage() {
       trtTracking: sex === "male" && trt,
     };
     setProfile(profile);
-    router.push("/upload");
+    // Branch on the landing intent. Users without a report start at the
+    // marketplace; users with a report go straight to upload → intake → plan.
+    router.push(wantsTests ? "/tests?firstTime=1" : "/upload");
   }
 
   return (
@@ -166,7 +183,7 @@ export default function StartPage() {
               margin: "6px 0 0",
             }}
           >
-            Tell us about you.
+            {wantsTests ? "First, a bit about you." : "Tell us about you."}
           </h1>
           <p
             style={{
@@ -178,7 +195,9 @@ export default function StartPage() {
               margin: "8px 0 0",
             }}
           >
-            30 seconds. We use this to frame your markers — not to email you.
+            {wantsTests
+              ? "30 seconds — then we'll show you the right panels for your situation."
+              : "30 seconds. We use this to frame your markers — not to email you."}
           </p>
         </div>
 
@@ -205,8 +224,17 @@ export default function StartPage() {
               margin: "14px 0 18px",
             }}
           >
-            The most honest feedback you can get about your health{" "}
-            <span style={{ color: tok.red }}>is a blood test.</span>
+            {wantsTests ? (
+              <>
+                Let&apos;s find the right{" "}
+                <span style={{ color: tok.red }}>first panel for you.</span>
+              </>
+            ) : (
+              <>
+                The most honest feedback you can get about your health{" "}
+                <span style={{ color: tok.red }}>is a blood test.</span>
+              </>
+            )}
           </h1>
           <p
             style={{
@@ -218,9 +246,9 @@ export default function StartPage() {
               maxWidth: 460,
             }}
           >
-            Tell us a few things so we can frame your markers correctly. We use
-            this to nudge you when something&apos;s likely drifting — not to spam
-            you.
+            {wantsTests
+              ? "Diet, sun, sex, city — these change which markers tend to drift first, so we use them to suggest the panel that's most worth booking."
+              : "Tell us a few things so we can frame your markers correctly. We use this to nudge you when something's likely drifting — not to spam you."}
           </p>
           <div
             style={{
@@ -358,7 +386,7 @@ export default function StartPage() {
               onClick={submit}
               style={{ width: "100%", marginTop: 22, padding: "16px 22px", fontSize: 16 }}
             >
-              See my baseline
+              {wantsTests ? "Find me a panel" : "See my baseline"}
               <Icon name="arrow" size={16} stroke={tok.white} strokeWidth={2.5} />
             </Button>
 

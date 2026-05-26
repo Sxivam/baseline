@@ -46,6 +46,10 @@ function TestsPageInner() {
       .filter((s) => s && MARKERS[s]);
   }, [search]);
 
+  // First-time visitors come from the landing page via /start?next=tests.
+  // No parse data yet → show baseline-panel framing instead of "re-test".
+  const firstTime = search.get("firstTime") === "1" || !parse;
+
   const [selectedMarkers, setSelectedMarkers] = useState<string[]>([]);
   const [selectedLabs, setSelectedLabs] = useState<string[]>([]);
   const [homeOnly, setHomeOnly] = useState(false);
@@ -209,35 +213,105 @@ function TestsPageInner() {
           <Wordmark size={16} />
         </div>
 
-        {/* title */}
+        {/* title — first-timer copy vs re-test copy */}
         <div style={{ marginTop: 24 }}>
-          <h1
-            style={{
-              fontFamily: tok.font,
-              fontSize: 32,
-              fontWeight: 900,
-              letterSpacing: "-0.02em",
-              margin: 0,
-              lineHeight: 1.05,
-            }}
-          >
-            Find a re-test <span style={{ color: tok.red }}>panel.</span>
-          </h1>
-          <p
-            style={{
-              fontFamily: tok.font,
-              fontSize: 15,
-              fontWeight: 500,
-              color: tok.ink2,
-              margin: "10px 0 0",
-              maxWidth: 580,
-              lineHeight: 1.55,
-            }}
-          >
-            Aggregated home-based blood tests across {labs.length} labs. Sorted by
-            what you actually need to re-test — not by who pays the most. Prices
-            refreshed nightly.
-          </p>
+          {firstTime ? (
+            <>
+              <h1
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 32,
+                  fontWeight: 900,
+                  letterSpacing: "-0.02em",
+                  margin: 0,
+                  lineHeight: 1.05,
+                }}
+              >
+                Your first <span style={{ color: tok.red }}>baseline panel.</span>
+              </h1>
+              <p
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: tok.ink2,
+                  margin: "10px 0 0",
+                  maxWidth: 580,
+                  lineHeight: 1.55,
+                }}
+              >
+                Most people start with a comprehensive panel that covers Vitamin D,
+                B12, iron, lipids, sugar, and thyroid. Aggregated across{" "}
+                {labs.length} labs, home-collection where available. Book one, drop
+                the report back here, and the loop starts.
+              </p>
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 14px",
+                  borderRadius: 99,
+                  background: tok.ink,
+                  color: tok.white,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,.85)",
+                  }}
+                >
+                  Tip
+                </span>
+                <span
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: tok.white,
+                  }}
+                >
+                  Use the marker filter below if you already know what you want.
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 32,
+                  fontWeight: 900,
+                  letterSpacing: "-0.02em",
+                  margin: 0,
+                  lineHeight: 1.05,
+                }}
+              >
+                Find a re-test <span style={{ color: tok.red }}>panel.</span>
+              </h1>
+              <p
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: tok.ink2,
+                  margin: "10px 0 0",
+                  maxWidth: 580,
+                  lineHeight: 1.55,
+                }}
+              >
+                Aggregated home-based blood tests across {labs.length} labs. Sorted by
+                what you actually need to re-test — not by who pays the most. Prices
+                refreshed nightly.
+              </p>
+            </>
+          )}
         </div>
 
         {/* marker filter */}
