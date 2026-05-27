@@ -45,7 +45,24 @@ export default function PlanPage() {
   const [source, setSource] = useState<string | null>(null);
   const [email, setEmailLocal] = useState("");
   const [committing, setCommitting] = useState(false);
+  // Progressive unlock: week 1 is always open; weeks 2-4 unlock as the user
+  // hits "Continue" or taps the locked tile. Animates on each unlock.
+  const [unlocked, setUnlocked] = useState<Set<number>>(new Set([1]));
   const started = useRef(false);
+
+  function unlockWeek(weekNum: number) {
+    setUnlocked((prev) => {
+      if (prev.has(weekNum)) return prev;
+      const next = new Set(prev);
+      next.add(weekNum);
+      return next;
+    });
+    // Smooth scroll to the newly unlocked week so the animation lands in view.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`week-card-${weekNum}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   const planInput = useMemo<PlanInput | null>(() => {
     if (!profile || !parse || !intake) return null;
@@ -297,9 +314,41 @@ export default function PlanPage() {
                   ONE THING AT A TIME
                 </span>
               </div>
-              {plan.weeks.map((w, i) => (
-                <WeekCard key={w.week} week={w} index={i + 1} total={plan.weeks.length} />
-              ))}
+              {plan.weeks.map((w, i) => {
+                const isOpen = unlocked.has(w.week);
+                const next = plan.weeks[i + 1];
+                const showContinue = isOpen && next && !unlocked.has(next.week);
+                return (
+                  <div
+                    key={w.week}
+                    id={`week-card-${w.week}`}
+                    style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                  >
+                    {isOpen ? (
+                      <WeekCard
+                        week={w}
+                        index={i + 1}
+                        total={plan.weeks.length}
+                        flipIn={w.week !== 1}
+                      />
+                    ) : (
+                      <LockedWeekCard
+                        week={w}
+                        index={i + 1}
+                        total={plan.weeks.length}
+                        onUnlock={() => unlockWeek(w.week)}
+                      />
+                    )}
+                    {showContinue && (
+                      <ContinueButton
+                        nextWeekNum={next.week}
+                        nextFocus={next.focus}
+                        onClick={() => unlockWeek(next.week)}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </section>
 
             {/* Accountability + tracks */}
@@ -577,15 +626,190 @@ export default function PlanPage() {
 
 // ─── sub-components ─────────────────────────────────────────────────────────
 
-function WeekCard({
+function LockedWeekCard({
   week,
   index,
   total,
+  onUnlock,
 }: {
   week: PlanWeek;
   index: number;
   total: number;
+  onUnlock: () => void;
 }) {
+  return (
+    <button
+      type="button"
+      onClick={onUnlock}
+      style={{
+        background: tok.white,
+        border: `1px dashed ${tok.sage}`,
+        borderRadius: 24,
+        padding: 22,
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        textAlign: "left",
+        cursor: "pointer",
+        position: "relative",
+        overflow: "hidden",
+        opacity: 0.78,
+        transition: "opacity .15s, transform .15s",
+        width: "100%",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.opacity = "1";
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.opacity = "0.78";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 16,
+          background: tok.paper,
+          border: `1px solid ${tok.sageSoft}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: "0 0 auto",
+          position: "relative",
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            display: "inline-flex",
+            animation: "bl-lock-pulse 2.4s ease-in-out infinite",
+          }}
+        >
+          <Icon name="lock" size={18} stroke={tok.mute} strokeWidth={2} />
+        </span>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: tok.font,
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: "0.12em",
+            color: tok.mute,
+            textTransform: "uppercase",
+          }}
+        >
+          Week {week.week} of {total} · locked
+        </div>
+        <div
+          style={{
+            fontFamily: tok.font,
+            fontSize: 16,
+            fontWeight: 900,
+            color: tok.ink2,
+            letterSpacing: "-0.01em",
+            marginTop: 4,
+            lineHeight: 1.3,
+            filter: "blur(3px)",
+            userSelect: "none",
+          }}
+        >
+          {week.focus}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontFamily: tok.font,
+            fontSize: 12,
+            fontWeight: 700,
+            color: tok.red,
+          }}
+        >
+          Tap to unlock →
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function ContinueButton({
+  nextWeekNum,
+  nextFocus,
+  onClick,
+}: {
+  nextWeekNum: number;
+  nextFocus: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        padding: "14px 22px",
+        borderRadius: 999,
+        background: tok.red,
+        color: tok.white,
+        border: "none",
+        fontFamily: tok.font,
+        fontWeight: 800,
+        fontSize: 14,
+        cursor: "pointer",
+        boxShadow: tok.shadowRed,
+        transition: "transform .15s, box-shadow .15s",
+        margin: "4px 0 2px",
+        width: "100%",
+        maxWidth: 360,
+        alignSelf: "center",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <span>Unlock Week {nextWeekNum}</span>
+      <span
+        aria-hidden
+        style={{
+          opacity: 0.7,
+          fontWeight: 600,
+          maxWidth: 180,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        · {nextFocus.split("—")[0].trim()}
+      </span>
+      <Icon name="arrow" size={14} stroke={tok.white} strokeWidth={2.6} />
+    </button>
+  );
+}
+
+function WeekCard({
+  week,
+  index,
+  total,
+  flipIn = false,
+}: {
+  week: PlanWeek;
+  index: number;
+  total: number;
+  flipIn?: boolean;
+}) {
+  // First week renders with the gentle stagger-fade used elsewhere; later
+  // weeks use the flip-reveal animation when they're freshly unlocked.
+  const animation = flipIn
+    ? "bl-flip-reveal 0.65s cubic-bezier(.4,0,.2,1)"
+    : `bl-fade-up 0.4s ease-out ${index * 0.05}s backwards`;
   return (
     <article
       style={{
@@ -597,7 +821,8 @@ function WeekCard({
         display: "flex",
         flexDirection: "column",
         gap: 14,
-        animation: `bl-fade-up 0.4s ease-out ${index * 0.05}s backwards`,
+        animation,
+        transformOrigin: "top center",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
