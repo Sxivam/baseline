@@ -171,10 +171,10 @@ export default function HomePage() {
               lineHeight: 1.02,
             }}
           >
-            You look fine.
+            Don&apos;t wait for a health scare.
             <br />
             <span style={{ color: tok.red }}>
-              The inside story might be different
+              Your blood might tell a different story
               <span style={{ color: tok.ink }}>.</span>
             </span>
           </h1>
@@ -190,9 +190,10 @@ export default function HomePage() {
               margin: "22px auto 0",
             }}
           >
-            Most Indians don&apos;t test until something breaks. Baseline turns one
-            blood report into an ongoing baseline — projected, nudged, held
-            accountable. So you find the drift before it finds you.
+            You look great. Most Indians don&apos;t test until something breaks —
+            and by then the easy fixes are gone. Baseline turns one report into
+            an ongoing baseline: projected, nudged, held accountable.{" "}
+            <b style={{ color: tok.ink, fontWeight: 800 }}>Get tested today.</b>
           </p>
 
           {/* primary CTAs */}
