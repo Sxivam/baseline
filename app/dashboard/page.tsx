@@ -298,10 +298,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* hero + forecast */}
+        {/* hero only — forecast block moved below the plan tile */}
         <div
-          className="grid grid-cols-1 lg:grid-cols-2"
-          style={{ gap: 14, marginTop: 14, alignItems: "start" }}
+          style={{ marginTop: 14 }}
         >
           {/* hero card */}
           <div className="hi-card" style={{ padding: 22, position: "relative", overflow: "hidden" }}>
@@ -436,11 +435,30 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* forecast preview + nudge */}
-          {heroForecast ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div className="hi-card" style={{ padding: 22, position: "relative", overflow: "hidden" }}>
-                <Blob size={110} top={-26} right={-26} color={tok.redSoft} />
+        </div>
+
+        {/* plan tile — comes BEFORE forecast so the action plan is the first thing */}
+        <PlanTile
+          plan={plan}
+          accountabilityEmail={accountabilityEmail}
+          onOpenPlan={() => router.push("/plan")}
+          onStartPlan={() => router.push("/intake")}
+          onOpenImprove={() => router.push("/improve")}
+        />
+
+        {/* forecast preview + nudge — only for forecastable markers */}
+        {heroForecast ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: 14,
+              marginTop: 18,
+            }}
+            className="lg:grid-cols-2"
+          >
+            <div className="hi-card" style={{ padding: 22, position: "relative", overflow: "hidden" }}>
+              <Blob size={110} top={-26} right={-26} color={tok.redSoft} />
                 <div style={{ position: "relative", zIndex: 1 }}>
                   <span className="hi-label">Forecast · {heroDef?.name}</span>
                   <h3
@@ -544,6 +562,25 @@ export default function DashboardPage() {
                   >
                     A gentle nudge to re-test before this starts to drift.
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/nudges/${hero.markerId}/preview`)}
+                    style={{
+                      marginTop: 14,
+                      padding: "8px 14px",
+                      borderRadius: 99,
+                      border: "1px solid rgba(255,255,255,.18)",
+                      background: "transparent",
+                      color: tok.white,
+                      fontFamily: tok.font,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    See the nudge →
+                  </button>
                 </div>
               </div>
             </div>
@@ -565,16 +602,6 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
-        </div>
-
-        {/* plan tile — active plan, in-progress, or call to build */}
-        <PlanTile
-          plan={plan}
-          accountabilityEmail={accountabilityEmail}
-          onOpenPlan={() => router.push("/plan")}
-          onStartPlan={() => router.push("/intake")}
-          onOpenImprove={() => router.push("/improve")}
-        />
 
         {/* other markers */}
         {others.length > 0 && (
