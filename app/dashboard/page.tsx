@@ -11,6 +11,7 @@ import { useBaseline, useHydrated } from "@/lib/store";
 import { MARKERS } from "@/lib/markers";
 import { buildForecast } from "@/lib/forecast";
 import { markerHint } from "@/lib/copy";
+import { feelingLabel } from "@/lib/feelingLabels";
 import { daysAgo, formatDate, softDate } from "@/lib/format";
 import { statusSide } from "@/lib/status";
 import {
@@ -323,6 +324,21 @@ export default function DashboardPage() {
                   <Icon name={heroDef?.icon || "info"} size={26} stroke={tok.ink} strokeWidth={1.8} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
+                  {feelingLabel(hero.markerId) && (
+                    <div
+                      style={{
+                        fontFamily: tok.font,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: tok.red,
+                        letterSpacing: "-0.005em",
+                        marginBottom: 2,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {feelingLabel(hero.markerId)}
+                    </div>
+                  )}
                   <div className="hi-label">{heroDef?.fullName}</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
                     <span

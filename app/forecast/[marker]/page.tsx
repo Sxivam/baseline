@@ -11,6 +11,7 @@ import { MARKERS } from "@/lib/markers";
 import { buildForecast } from "@/lib/forecast";
 import { ERRORS } from "@/lib/copy";
 import { formatDate, softDate } from "@/lib/format";
+import { feelingLabel } from "@/lib/feelingLabels";
 import { Blob, Button, Disclaimer, Icon, Wordmark } from "@/components/ui";
 import { ForecastChart } from "@/components/ForecastChart";
 import type { Profile } from "@/lib/types";
@@ -217,6 +218,20 @@ export default function ForecastPage() {
         {TopBar}
 
         <div style={{ marginTop: 24 }}>
+          {feelingLabel(markerId) && (
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 14,
+                fontWeight: 700,
+                color: tok.red,
+                letterSpacing: "-0.005em",
+                marginBottom: 8,
+              }}
+            >
+              {feelingLabel(markerId)} · {def.name}
+            </div>
+          )}
           <h1
             style={{
               fontFamily: tok.font,
@@ -241,6 +256,21 @@ export default function ForecastPage() {
             }}
           >
             {verdict}
+          </p>
+          <p
+            style={{
+              fontFamily: tok.font,
+              fontSize: 13,
+              fontStyle: "italic",
+              fontWeight: 500,
+              color: tok.mute,
+              margin: "12px 0 0",
+              maxWidth: 580,
+              lineHeight: 1.55,
+            }}
+          >
+            Directional estimate, not a model from one data point — your value,
+            the season and your diet flag a likely drift window.
           </p>
         </div>
 

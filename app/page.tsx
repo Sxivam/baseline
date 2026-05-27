@@ -41,21 +41,41 @@ const STATS = [
   },
 ];
 
-const FEATURES = [
+interface Feature {
+  step: string;
+  title: string;
+  body: string;
+  badge?: string;
+  loopClose?: boolean;
+}
+
+const FEATURES: Feature[] = [
   {
     step: "01",
-    title: "One test, ongoing baseline",
-    body: "Drop your blood report. Baseline parses every relevant marker — D, B12, iron, lipids, thyroid, sugar — and shows where you actually stand.",
+    title: "Test",
+    body: "Two entry paths into the same loop — upload an existing blood report, or pick a panel from the marketplace and book a fresh one. Whichever's truer for you right now.",
   },
   {
     step: "02",
-    title: "Forecast what's drifting",
-    body: "Vitamin D drops in winter. B12 drifts on plant-leaning diets. We project when each marker likely crosses the line so you act before it does.",
+    title: "Baseline",
+    badge: "AI",
+    body: "AI reads your report in seconds — no manual typing. It maps every marker — the low-mood one (Vitamin D), the brain-fog one (B12), the breathless-on-stairs one (Ferritin), the long-game heart one (Lipids), the energy-crash one (HbA1c / fasting glucose), the always-tired one (TSH) — to its reference range, flags what's drifting, and writes your baseline in plain language with one lever each.",
   },
   {
     step: "03",
-    title: "Held to it, gently",
-    body: "A four-week plan curated to your markers + a weekly check-in inbox. Test → act → re-test. No upsells, no dosing, no diagnosis.",
+    title: "Plan",
+    body: "A handful of adaptive intake questions, then a 4-week curated plan: foundations → food → movement → re-test. Two moves a week. Tick them off as you go.",
+  },
+  {
+    step: "04",
+    title: "Forecast",
+    body: "A directional estimate — not a model from one data point — of when the low-mood one (Vitamin D) or the brain-fog one (B12) is likely to drift below the line. Your value, the season, and your diet flag the window.",
+  },
+  {
+    step: "05",
+    title: "Nudge & re-test",
+    body: "A quiet weekly check-in lands in your inbox. When the forecast says it's time, the re-test reminder fires and the marketplace surfaces the right panel. The loop closes. Then it restarts.",
+    loopClose: true,
   },
 ];
 
@@ -471,34 +491,113 @@ export default function HomePage() {
               <article
                 key={f.step}
                 style={{
-                  background: tok.white,
-                  border: `1px solid ${tok.sageSoft}`,
+                  background: f.loopClose ? tok.ink : tok.white,
+                  border: f.loopClose
+                    ? "none"
+                    : `1px solid ${tok.sageSoft}`,
                   borderRadius: 24,
                   padding: 22,
                   boxShadow: tok.shadowSm,
                   display: "flex",
                   flexDirection: "column",
                   gap: 10,
+                  color: f.loopClose ? tok.white : tok.ink,
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
+                {f.loopClose && (
+                  <Blob
+                    size={150}
+                    top={-40}
+                    right={-40}
+                    color="rgba(202,0,19,.28)"
+                    blur={28}
+                  />
+                )}
                 <div
                   style={{
-                    fontFamily: tok.font,
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: "0.12em",
-                    color: tok.red,
-                    textTransform: "uppercase",
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
                   }}
                 >
-                  Step {f.step}
+                  <span
+                    style={{
+                      fontFamily: tok.font,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: "0.12em",
+                      color: f.loopClose ? "rgba(255,255,255,.75)" : tok.red,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Step {f.step}
+                  </span>
+                  {f.badge && (
+                    <span
+                      style={{
+                        fontFamily: tok.font,
+                        fontSize: 10,
+                        fontWeight: 900,
+                        letterSpacing: "0.06em",
+                        padding: "3px 8px",
+                        borderRadius: 99,
+                        background: tok.ink,
+                        color: tok.white,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {f.badge}
+                    </span>
+                  )}
+                  {f.loopClose && (
+                    <span
+                      title="Loop closes here — and restarts"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "3px 10px",
+                        borderRadius: 99,
+                        background: "rgba(255,255,255,.12)",
+                        color: tok.white,
+                        fontFamily: tok.font,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={tok.white}
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                        <path d="M21 4v4h-4" />
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                        <path d="M3 20v-4h4" />
+                      </svg>
+                      Loop closes
+                    </span>
+                  )}
                 </div>
                 <h3
                   style={{
+                    position: "relative",
                     fontFamily: tok.font,
                     fontSize: 19,
                     fontWeight: 900,
-                    color: tok.ink,
+                    color: f.loopClose ? tok.white : tok.ink,
                     margin: 0,
                     letterSpacing: "-0.01em",
                     lineHeight: 1.25,
@@ -508,10 +607,11 @@ export default function HomePage() {
                 </h3>
                 <p
                   style={{
+                    position: "relative",
                     fontFamily: tok.font,
                     fontSize: 13,
                     fontWeight: 500,
-                    color: tok.ink2,
+                    color: f.loopClose ? "rgba(255,255,255,.78)" : tok.ink2,
                     lineHeight: 1.55,
                     margin: 0,
                   }}
