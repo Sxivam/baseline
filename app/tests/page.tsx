@@ -371,6 +371,51 @@ function TestsPageInner() {
           )}
         </div>
 
+        {/* pizza / sushi pricing frame — anchors the "this is cheap" hook */}
+        <div
+          style={{
+            marginTop: 22,
+            padding: "16px 18px",
+            borderRadius: 18,
+            background: tok.ink,
+            color: tok.white,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            flexWrap: "wrap",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Blob
+            size={140}
+            top={-40}
+            right={-40}
+            color="rgba(202,0,19,.28)"
+            blur={26}
+          />
+          <span style={{ fontSize: 28, position: "relative" }}>🍕</span>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 200,
+              position: "relative",
+              fontFamily: tok.font,
+              fontSize: 14,
+              fontWeight: 600,
+              color: "rgba(255,255,255,.85)",
+              lineHeight: 1.5,
+            }}
+          >
+            <b style={{ color: tok.white, fontWeight: 800 }}>
+              Smaller tests cost less than a pizza.
+            </b>{" "}
+            Bigger ones, less than your favourite sushi. The cheapest first
+            step you can take for your health.
+          </div>
+          <span style={{ fontSize: 28, position: "relative" }}>🍣</span>
+        </div>
+
         {/* first-time intent picker — concern-first, marker-second */}
         {firstTime && (
           <div style={{ marginTop: 26 }}>
