@@ -23,6 +23,63 @@ import {
 import { buildForecast } from "@/lib/forecast";
 import { softDate } from "@/lib/format";
 
+// Intent-first concerns surfaced on the first-time marketplace flow.
+// Each maps to the clinical markers a user with that concern usually wants
+// to look at — plain English first, clinical names second.
+const INTENT_GROUPS: {
+  id: string;
+  emoji: string;
+  label: string;
+  description: string;
+  markers: string[];
+}[] = [
+  {
+    id: "full",
+    emoji: "🧪",
+    label: "Full body baseline",
+    description:
+      "The comprehensive check — every marker we forecast and track.",
+    markers: [
+      "vitamin_d",
+      "vitamin_b12",
+      "ferritin",
+      "ldl",
+      "hdl",
+      "hba1c",
+      "fasting_glucose",
+      "tsh",
+    ],
+  },
+  {
+    id: "mood",
+    emoji: "🌧",
+    label: "Low mood or brain fog",
+    description: "Vitamin D + B12 — the mood and cognition ones.",
+    markers: ["vitamin_d", "vitamin_b12"],
+  },
+  {
+    id: "tired",
+    emoji: "😴",
+    label: "Always tired or breathless",
+    description: "Iron stores + thyroid — usually the quiet culprits.",
+    markers: ["ferritin", "tsh"],
+  },
+  {
+    id: "energy-crash",
+    emoji: "🥕",
+    label: "Energy crashes after meals",
+    description: "HbA1c + fasting glucose — the blood-sugar arc.",
+    markers: ["hba1c", "fasting_glucose"],
+  },
+  {
+    id: "heart",
+    emoji: "❤️",
+    label: "The long-game heart check",
+    description: "LDL + HDL — the cholesterol picture.",
+    markers: ["ldl", "hdl"],
+  },
+];
+
 export default function TestsPage() {
   return (
     <Suspense fallback={<Splash />}>
@@ -314,9 +371,111 @@ function TestsPageInner() {
           )}
         </div>
 
+        {/* first-time intent picker — concern-first, marker-second */}
+        {firstTime && (
+          <div style={{ marginTop: 26 }}>
+            <span className="hi-label">What brings you here?</span>
+            <p
+              style={{
+                fontFamily: tok.font,
+                fontSize: 13,
+                fontWeight: 500,
+                color: tok.ink2,
+                margin: "4px 0 12px",
+                lineHeight: 1.5,
+              }}
+            >
+              Pick what fits — we&apos;ll preselect the right markers.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 10,
+              }}
+            >
+              {INTENT_GROUPS.map((g) => {
+                const allMatch =
+                  selectedMarkers.length === g.markers.length &&
+                  g.markers.every((m) => selectedMarkers.includes(m));
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedMarkers(g.markers);
+                      // smooth scroll to the panel list so the choice "lands"
+                      requestAnimationFrame(() => {
+                        document
+                          .getElementById("panel-list")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      });
+                    }}
+                    style={{
+                      textAlign: "left",
+                      padding: "16px 16px",
+                      borderRadius: 20,
+                      border: `1px solid ${allMatch ? tok.ink : tok.sageSoft}`,
+                      background: allMatch ? tok.ink : tok.white,
+                      color: allMatch ? tok.white : tok.ink,
+                      cursor: "pointer",
+                      transition: "transform .15s, box-shadow .15s",
+                      boxShadow: allMatch ? tok.shadowSm : "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <span style={{ fontSize: 22 }}>{g.emoji}</span>
+                    <span
+                      style={{
+                        fontFamily: tok.font,
+                        fontSize: 15,
+                        fontWeight: 900,
+                        letterSpacing: "-0.01em",
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {g.label}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: tok.font,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: allMatch ? "rgba(255,255,255,.7)" : tok.ink2,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {g.description}
+                    </span>
+                    <span
+                      style={{
+                        marginTop: 4,
+                        fontFamily: tok.font,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: allMatch ? "rgba(255,255,255,.55)" : tok.mute,
+                      }}
+                    >
+                      {g.markers.length} marker{g.markers.length > 1 ? "s" : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* marker filter */}
-        <div style={{ marginTop: 22 }}>
-          <span className="hi-label">Filter by marker</span>
+        <div style={{ marginTop: firstTime ? 22 : 22 }}>
+          <span className="hi-label">
+            {firstTime ? "Or filter by marker" : "Filter by marker"}
+          </span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
             {MARKER_ORDER.map((m) => {
               const def = MARKERS[m];
@@ -443,9 +602,9 @@ function TestsPageInner() {
           </button>
         </div>
 
-        {/* Recommended */}
+        {/* Recommended — anchor for the intent-picker scroll target */}
         {recommended.length > 0 && (
-          <div style={{ marginTop: 26 }}>
+          <div id="panel-list" style={{ marginTop: 26, scrollMarginTop: 80 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
               <span className="hi-label">
                 Recommended for {selectedMarkers.map((m) => MARKERS[m].name).join(" + ")}
