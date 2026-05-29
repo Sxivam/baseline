@@ -13,13 +13,14 @@ import { buildForecast } from "@/lib/forecast";
 import { markerHint } from "@/lib/copy";
 import { feelingLabel } from "@/lib/feelingLabels";
 import { daysAgo, formatDate, softDate } from "@/lib/format";
-import { statusSide } from "@/lib/status";
+import { severityFor, statusSide, doctorCalloutCopy } from "@/lib/status";
 import {
   Avatar,
   Blob,
   BottomNav,
   Button,
   Disclaimer,
+  DoctorCallout,
   Icon,
   StatusChip,
   Wordmark,
@@ -96,6 +97,12 @@ export default function DashboardPage() {
         : "all in range";
 
   const others = markers.filter((m) => m.markerId !== hero.markerId);
+
+  // Severity-aware doctor recommendation. Any marker reading far enough off
+  // the typical range gets surfaced here so the user can't scroll past it.
+  const severeMarkers = markers.filter(
+    (m) => severityFor(m.markerId, m.value, profile.sex) === "severe",
+  );
 
   return (
     <main style={{ minHeight: "100vh", background: tok.paper, position: "relative", overflow: "hidden" }}>
@@ -193,6 +200,118 @@ export default function DashboardPage() {
             </span>
           </div>
         </div>
+
+        {/* severe-marker banner — surfaced above the hero so it cannot be
+            scrolled past. Lists every marker far enough off the typical range
+            that a clinician should weigh in alongside the lifestyle plan. */}
+        {severeMarkers.length > 0 && (
+          <div
+            style={{
+              marginTop: 18,
+              padding: "16px 18px",
+              borderRadius: 20,
+              background: tok.white,
+              border: `1px solid ${tok.red}`,
+              boxShadow: tok.shadowSm,
+              display: "flex",
+              gap: 14,
+              alignItems: "flex-start",
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 12,
+                background: "rgba(202,0,19,0.08)",
+                border: `1px solid ${tok.redMid}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flex: "0 0 auto",
+                fontSize: 18,
+              }}
+            >
+              🩺
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.12em",
+                  color: tok.red,
+                  textTransform: "uppercase",
+                }}
+              >
+                Talk to a doctor too
+              </div>
+              <div
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 14,
+                  fontWeight: 800,
+                  color: tok.ink,
+                  marginTop: 4,
+                  letterSpacing: "-0.005em",
+                  lineHeight: 1.35,
+                }}
+              >
+                {severeMarkers.length === 1
+                  ? `One reading is far enough off the typical range that a clinician should weigh in.`
+                  : `${severeMarkers.length} readings are far enough off the typical range that a clinician should weigh in.`}
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "flex",
+                  gap: 6,
+                  flexWrap: "wrap",
+                }}
+              >
+                {severeMarkers.map((m) => (
+                  <button
+                    key={m.markerId}
+                    type="button"
+                    onClick={() => setSelected(m.markerId)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "5px 11px",
+                      borderRadius: 99,
+                      background: "rgba(202,0,19,0.08)",
+                      border: `1px solid ${tok.redMid}`,
+                      color: tok.red,
+                      fontFamily: tok.font,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {MARKERS[m.markerId]?.name} · {m.value} {m.unit}
+                  </button>
+                ))}
+              </div>
+              <div
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: tok.ink2,
+                  marginTop: 10,
+                  lineHeight: 1.5,
+                }}
+              >
+                Keep the four-week plan running. The doctor conversation is the
+                second lever, not the only one. Baseline tracks; clinicians
+                diagnose.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* scroll selector */}
         <div className="no-scrollbar" style={{ marginTop: 18, overflowX: "auto" }}>
@@ -437,6 +556,12 @@ export default function DashboardPage() {
                   {markerHint(hero.markerId, hero.status)}
                 </span>
               </div>
+
+              {severityFor(hero.markerId, hero.value, profile.sex) === "severe" && (
+                <DoctorCallout
+                  body={doctorCalloutCopy(hero.markerId, hero.value, hero.unit)}
+                />
+              )}
 
               {heroForecast && (
                 <Button

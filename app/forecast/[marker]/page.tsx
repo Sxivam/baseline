@@ -12,6 +12,8 @@ import { buildForecast } from "@/lib/forecast";
 import { ERRORS } from "@/lib/copy";
 import { formatDate, softDate } from "@/lib/format";
 import { feelingLabel } from "@/lib/feelingLabels";
+import { severityFor, doctorCalloutCopy } from "@/lib/status";
+import { DoctorCallout } from "@/components/ui";
 import { Blob, Button, Disclaimer, Icon, Wordmark } from "@/components/ui";
 import { ForecastChart } from "@/components/ForecastChart";
 import type { Profile } from "@/lib/types";
@@ -272,6 +274,12 @@ export default function ForecastPage() {
             Directional estimate, not a model from one data point — your value,
             the season and your diet flag a likely drift window.
           </p>
+          {severityFor(markerId, reading.value, profile.sex) === "severe" && (
+            <DoctorCallout
+              body={doctorCalloutCopy(markerId, reading.value, def.unit)}
+              style={{ marginTop: 18, maxWidth: 640 }}
+            />
+          )}
         </div>
 
         <div

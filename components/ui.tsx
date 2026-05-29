@@ -424,6 +424,81 @@ export function SegGroup<T extends string>({
 }
 
 // ── Labelled field wrapper ──────────────────────────────────────────────────
+// ── Doctor callout ──────────────────────────────────────────────────────────
+// Shown when a marker reading sits significantly off the typical range (the
+// "severe" tier in lib/status.ts). §7-safe: never diagnoses, always frames the
+// clinician as alongside the lifestyle work, never instead of.
+export function DoctorCallout({
+  body,
+  compact = false,
+  style,
+}: {
+  body: string;
+  compact?: boolean;
+  style?: CSSProperties;
+}) {
+  return (
+    <div
+      role="note"
+      style={{
+        marginTop: compact ? 10 : 14,
+        padding: compact ? "12px 14px" : "14px 16px",
+        borderRadius: 16,
+        background: "rgba(202,0,19,0.04)",
+        border: `1px solid ${tok.redMid}`,
+        display: "flex",
+        gap: 10,
+        alignItems: "flex-start",
+        ...style,
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 8,
+          background: tok.white,
+          border: `1px solid ${tok.redMid}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: "0 0 auto",
+          fontSize: 14,
+        }}
+      >
+        🩺
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontFamily: tok.font,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: tok.red,
+          }}
+        >
+          Worth a doctor&apos;s eyes too
+        </div>
+        <div
+          style={{
+            fontFamily: tok.font,
+            fontSize: 13,
+            fontWeight: 600,
+            color: tok.ink2,
+            marginTop: 4,
+            lineHeight: 1.5,
+          }}
+        >
+          {body}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Field({
   label,
   hint,
