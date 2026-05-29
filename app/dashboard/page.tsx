@@ -12,6 +12,7 @@ import { MARKERS } from "@/lib/markers";
 import { buildForecast } from "@/lib/forecast";
 import { markerHint } from "@/lib/copy";
 import { feelingLabel } from "@/lib/feelingLabels";
+import { EDUCATION } from "@/lib/education";
 import { daysAgo, formatDate, softDate } from "@/lib/format";
 import { severityFor, statusSide, doctorCalloutCopy } from "@/lib/status";
 import {
@@ -51,6 +52,7 @@ export default function DashboardPage() {
   const accountabilityEmail = useBaseline((s) => s.accountabilityEmail);
 
   const [selected, setSelected] = useState<string | null>(null);
+  const [expandedMarker, setExpandedMarker] = useState<string | null>(null);
 
   useEffect(() => {
     if (hydrated && !profile) router.replace("/start");
@@ -761,66 +763,23 @@ export default function DashboardPage() {
               </span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {others.map((m) => {
-                const def = MARKERS[m.markerId];
-                const fg =
-                  m.status === "low" ? tok.red : m.status === "watch" ? tok.amber : tok.ink2;
-                return (
-                  <button
-                    key={m.markerId}
-                    type="button"
-                    onClick={() => {
-                      setSelected(m.markerId);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className="hi-card-nested"
-                    style={{
-                      padding: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      cursor: "pointer",
-                      textAlign: "left",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 99,
-                        background: `${def?.accent || tok.sage}22`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flex: "0 0 auto",
-                      }}
-                    >
-                      <Icon name={def?.icon || "info"} size={20} stroke={def?.accent || tok.ink2} strokeWidth={2} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                        <span style={{ fontFamily: tok.font, fontSize: 15, fontWeight: 800, color: tok.ink }}>
-                          {def?.name}
-                        </span>
-                        <span className="hi-num" style={{ fontFamily: tok.font, fontSize: 13, fontWeight: 800, color: fg }}>
-                          {m.value}
-                        </span>
-                        <span style={{ fontFamily: tok.font, fontSize: 11, fontWeight: 700, color: tok.mute }}>
-                          {m.unit}
-                        </span>
-                      </div>
-                      <div style={{ fontFamily: tok.font, fontSize: 11, fontWeight: 700, color: tok.mute, marginTop: 2 }}>
-                        {m.status === "low"
-                          ? "Needs attention"
-                          : m.status === "watch"
-                            ? "Worth watching"
-                            : "In range"}
-                      </div>
-                    </div>
-                    <StatusChip kind={m.status} variant="plain" />
-                  </button>
-                );
-              })}
+              {others.map((m) => (
+                <MarkerRow
+                  key={m.markerId}
+                  marker={m}
+                  sex={profile.sex}
+                  isOpen={expandedMarker === m.markerId}
+                  onToggle={() =>
+                    setExpandedMarker((prev) =>
+                      prev === m.markerId ? null : m.markerId,
+                    )
+                  }
+                  onFocus={() => {
+                    setSelected(m.markerId);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              ))}
             </div>
           </>
         )}
@@ -837,6 +796,313 @@ export default function DashboardPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// ─── Other-marker row — collapsed summary, expandable detail ────────────────
+
+function MarkerRow({
+  marker,
+  sex,
+  isOpen,
+  onToggle,
+  onFocus,
+}: {
+  marker: MarkerReading;
+  sex: Profile["sex"];
+  isOpen: boolean;
+  onToggle: () => void;
+  onFocus: () => void;
+}) {
+  const def = MARKERS[marker.markerId];
+  const edu = EDUCATION[marker.markerId];
+  const sev = severityFor(marker.markerId, marker.value, sex);
+  const isOff = marker.status !== "in";
+  const fg =
+    marker.status === "low"
+      ? tok.red
+      : marker.status === "watch"
+        ? tok.amber
+        : tok.ink2;
+
+  return (
+    <div
+      className="hi-card-nested"
+      style={{
+        padding: 0,
+        overflow: "hidden",
+        transition: "border-color .15s",
+        border: isOpen ? `1px solid ${tok.sage}` : undefined,
+      }}
+    >
+      {/* summary row — same look as before, plus a chevron */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        style={{
+          width: "100%",
+          padding: 14,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          cursor: "pointer",
+          textAlign: "left",
+          background: "transparent",
+          border: "none",
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 99,
+            background: `${def?.accent || tok.sage}22`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flex: "0 0 auto",
+          }}
+        >
+          <Icon
+            name={def?.icon || "info"}
+            size={20}
+            stroke={def?.accent || tok.ink2}
+            strokeWidth={2}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span
+              style={{
+                fontFamily: tok.font,
+                fontSize: 15,
+                fontWeight: 800,
+                color: tok.ink,
+              }}
+            >
+              {def?.name}
+            </span>
+            <span
+              className="hi-num"
+              style={{
+                fontFamily: tok.font,
+                fontSize: 13,
+                fontWeight: 800,
+                color: fg,
+              }}
+            >
+              {marker.value}
+            </span>
+            <span
+              style={{
+                fontFamily: tok.font,
+                fontSize: 11,
+                fontWeight: 700,
+                color: tok.mute,
+              }}
+            >
+              {marker.unit}
+            </span>
+          </div>
+          <div
+            style={{
+              fontFamily: tok.font,
+              fontSize: 11,
+              fontWeight: 700,
+              color: tok.mute,
+              marginTop: 2,
+            }}
+          >
+            {marker.status === "low"
+              ? "Needs attention"
+              : marker.status === "watch"
+                ? "Worth watching"
+                : "In range"}
+          </div>
+        </div>
+        <StatusChip kind={marker.status} variant="plain" />
+        <span
+          aria-hidden
+          style={{
+            marginLeft: 4,
+            transition: "transform .2s",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            display: "inline-flex",
+            color: tok.mute,
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </button>
+
+      {/* expanded body */}
+      {isOpen && edu && (
+        <div
+          style={{
+            padding: "4px 18px 16px",
+            borderTop: `1px dashed ${tok.sage}80`,
+            animation: "bl-fade-up 0.25s ease-out",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          {/* What this is */}
+          <div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.1em",
+                color: tok.mute,
+                textTransform: "uppercase",
+                marginTop: 12,
+              }}
+            >
+              What this is
+            </div>
+            <p
+              style={{
+                fontFamily: tok.font,
+                fontSize: 13,
+                fontWeight: 600,
+                color: tok.ink2,
+                lineHeight: 1.5,
+                margin: "4px 0 0",
+              }}
+            >
+              {edu.whatItTellsYou}
+            </p>
+          </div>
+
+          {/* Why it matters — only if off range */}
+          {isOff && (
+            <div>
+              <div
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.1em",
+                  color: tok.red,
+                  textTransform: "uppercase",
+                }}
+              >
+                Why this reading matters
+              </div>
+              <p
+                style={{
+                  fontFamily: tok.font,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: tok.ink2,
+                  lineHeight: 1.5,
+                  margin: "4px 0 0",
+                }}
+              >
+                {edu.whyItMatters}
+              </p>
+            </div>
+          )}
+
+          {/* Natural levers */}
+          <div>
+            <div
+              style={{
+                fontFamily: tok.font,
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.1em",
+                color: tok.ink,
+                textTransform: "uppercase",
+              }}
+            >
+              Natural ways to move this
+            </div>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: "6px 0 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              {edu.naturalLevers.map((lever, i) => (
+                <li
+                  key={i}
+                  style={{
+                    fontFamily: tok.font,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: tok.ink2,
+                    lineHeight: 1.5,
+                    paddingLeft: 18,
+                    position: "relative",
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 9,
+                      width: 6,
+                      height: 6,
+                      borderRadius: 99,
+                      background: tok.red,
+                    }}
+                  />
+                  {lever}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Doctor callout when severe */}
+          {sev === "severe" && (
+            <DoctorCallout
+              compact
+              body={doctorCalloutCopy(marker.markerId, marker.value, marker.unit)}
+            />
+          )}
+
+          {/* Tertiary action: open detail / make hero */}
+          <button
+            type="button"
+            onClick={onFocus}
+            style={{
+              alignSelf: "flex-start",
+              background: "transparent",
+              border: "none",
+              padding: "4px 0 0",
+              fontFamily: tok.font,
+              fontSize: 12,
+              fontWeight: 800,
+              color: tok.ink,
+              cursor: "pointer",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            Focus on this marker ↑
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
