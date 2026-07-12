@@ -3,14 +3,14 @@
     "id": "pe-vit-d",
     "lab": "PharmEasy",
     "name": "Vitamin D Total (25-OH)",
-    "price": 1399,
+    "price": 1349,
     "markers": [
       "vitamin_d"
     ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-06-27"
+    "lastVerified": "2026-07-12"
   },
   {
     "id": "1mg-vit-d",
@@ -55,14 +55,14 @@
     "id": "pe-b12",
     "lab": "PharmEasy",
     "name": "Vitamin B12 Test",
-    "price": 1399,
+    "price": 1349,
     "markers": [
       "vitamin_b12"
     ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-06-27"
+    "lastVerified": "2026-07-12"
   },
   {
     "id": "1mg-b12",
@@ -81,7 +81,7 @@
     "id": "pe-d-b12",
     "lab": "PharmEasy",
     "name": "Vitamin D + B12 Combo",
-    "price": 1399,
+    "price": 1349,
     "markers": [
       "vitamin_d",
       "vitamin_b12"
@@ -89,13 +89,13 @@
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-06-27"
+    "lastVerified": "2026-07-12"
   },
   {
     "id": "pe-lipid",
     "lab": "PharmEasy",
     "name": "Lipid Profile",
-    "price": 1399,
+    "price": 1349,
     "markers": [
       "ldl",
       "hdl"
@@ -103,7 +103,7 @@
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-06-27"
+    "lastVerified": "2026-07-12"
   },
   {
     "id": "1mg-hba1c",
@@ -135,14 +135,14 @@
     "id": "pe-iron-studies",
     "lab": "PharmEasy",
     "name": "Iron Studies (incl. Ferritin)",
-    "price": 1399,
+    "price": 1349,
     "markers": [
       "ferritin"
     ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://pharmeasy.in/diagnostics/",
-    "lastVerified": "2026-06-27"
+    "lastVerified": "2026-07-12"
   },
   {
     "id": "thyro-aarogyam-b",
