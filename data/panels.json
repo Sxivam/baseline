@@ -42,14 +42,14 @@
     "id": "redcliffe-vit-d",
     "lab": "Redcliffe Labs",
     "name": "Vitamin D (25-OH) Test",
-    "price": 349,
+    "price": 13879,
     "markers": [
       "vitamin_d"
     ],
     "sampleType": "home",
     "tat": "24h",
     "url": "https://redcliffelabs.com/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-07-20"
   },
   {
     "id": "pe-b12",
@@ -166,7 +166,7 @@
     "id": "redcliffe-fb",
     "lab": "Redcliffe Labs",
     "name": "Full Body Checkup (65 tests)",
-    "price": 999,
+    "price": 13879,
     "markers": [
       "vitamin_d",
       "vitamin_b12",
@@ -180,7 +180,7 @@
     "sampleType": "home",
     "tat": "48h",
     "url": "https://redcliffelabs.com/",
-    "lastVerified": "2026-05-23"
+    "lastVerified": "2026-07-20"
   },
   {
     "id": "1mg-fb",
